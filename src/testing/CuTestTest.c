@@ -120,10 +120,10 @@ static void X_CompareAsserts(CuTest *tc, const char *file, int line,
 
 void TestToken(CuTest *tc, char token[], char expected[]) {
   system("make");
-  while (access("./compiler", F_OK) != 0)
+  while (access("./etapa1", F_OK) != 0)
     continue;
   char message[1024];
-  snprintf(message, sizeof(message), "echo \"%s\" | ./compiler", token);
+  snprintf(message, sizeof(message), "echo \"%s\" | ./etapa1", token);
   printf("%s\n", message);
   FILE *f = popen(message, "r");
   char buffer[1024];
