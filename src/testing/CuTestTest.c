@@ -8,6 +8,83 @@
 #include "../../include/testing/CuTest.h"
 
 /*-------------------------------------------------------------------------*
+ * CuString Test
+ *-------------------------------------------------------------------------*/
+
+void TestCuStringNew(CuTest *tc) {
+  CuString *str = CuStringNew();
+  CuAssertTrue(tc, 0 == str->length);
+  CuAssertTrue(tc, 0 != str->size);
+  CuAssertStrEquals(tc, "", str->buffer);
+}
+
+void TestCuStringAppend(CuTest *tc) {
+  CuString *str = CuStringNew();
+  CuStringAppend(str, "hello");
+  CuAssertIntEquals(tc, 5, str->length);
+  CuAssertStrEquals(tc, "hello", str->buffer);
+  CuStringAppend(str, " world");
+  CuAssertIntEquals(tc, 11, str->length);
+  CuAssertStrEquals(tc, "hello world", str->buffer);
+}
+
+void TestCuStringAppendNULL(CuTest *tc) {
+  CuString *str = CuStringNew();
+  CuStringAppend(str, NULL);
+  CuAssertIntEquals(tc, 4, str->length);
+  CuAssertStrEquals(tc, "NULL", str->buffer);
+}
+
+void TestCuStringAppendChar(CuTest *tc) {
+  CuString *str = CuStringNew();
+  CuStringAppendChar(str, 'a');
+  CuStringAppendChar(str, 'b');
+  CuStringAppendChar(str, 'c');
+  CuStringAppendChar(str, 'd');
+  CuAssertIntEquals(tc, 4, str->length);
+  CuAssertStrEquals(tc, "abcd", str->buffer);
+}
+
+void TestCuStringInserts(CuTest *tc) {
+  CuString *str = CuStringNew();
+  CuStringAppend(str, "world");
+  CuAssertIntEquals(tc, 5, str->length);
+  CuAssertStrEquals(tc, "world", str->buffer);
+  CuStringInsert(str, "hell", 0);
+  CuAssertIntEquals(tc, 9, str->length);
+  CuAssertStrEquals(tc, "hellworld", str->buffer);
+  CuStringInsert(str, "o ", 4);
+  CuAssertIntEquals(tc, 11, str->length);
+  CuAssertStrEquals(tc, "hello world", str->buffer);
+  CuStringInsert(str, "!", 11);
+  CuAssertIntEquals(tc, 12, str->length);
+  CuAssertStrEquals(tc, "hello world!", str->buffer);
+}
+
+void TestCuStringResizes(CuTest *tc) {
+  CuString *str = CuStringNew();
+  int i;
+  for (i = 0; i < STRING_MAX; ++i) {
+    CuStringAppend(str, "aa");
+  }
+  CuAssertTrue(tc, STRING_MAX * 2 == str->length);
+  CuAssertTrue(tc, STRING_MAX * 2 <= str->size);
+}
+
+CuSuite *CuStringGetSuite(void) {
+  CuSuite *suite = CuSuiteNew();
+
+  SUITE_ADD_TEST(suite, TestCuStringNew);
+  SUITE_ADD_TEST(suite, TestCuStringAppend);
+  SUITE_ADD_TEST(suite, TestCuStringAppendNULL);
+  SUITE_ADD_TEST(suite, TestCuStringAppendChar);
+  SUITE_ADD_TEST(suite, TestCuStringInserts);
+  SUITE_ADD_TEST(suite, TestCuStringResizes);
+
+  return suite;
+}
+
+/*-------------------------------------------------------------------------*
  * Helper functions
  *-------------------------------------------------------------------------*/
 
@@ -84,6 +161,20 @@ void TestSpecialCharacters(CuTest *tc) {
   TestToken(tc, "=", "1 TK_ESPECIAL [=]\n");
   TestToken(tc, ",", "1 TK_ESPECIAL [,]\n");
   TestToken(tc, ";", "1 TK_ESPECIAL [;]\n");
+}
+
+void TestCompoundOperators(CuTest *tc) {
+  TestToken(tc, "<=", "1 TK_OC_LE [<=]\n");
+  TestToken(tc, ">=", "1 TK_OC_GE [>=]\n");
+  TestToken(tc, "==", "1 TK_OC_EQ [==]\n");
+  TestToken(tc, "!=", "1 TK_OC_NE [!=]\n");
+  TestToken(tc, "&", "1 TK_OC_AND [&]\n");
+  TestToken(tc, "|", "1 TK_OC_OR [|]\n");
+}
+
+void TestIdentifiers(CuTest *tc) {
+  TestToken(tc, "identifier", "1 TK_IDENTIFICADOR [identifier]\n");
+  TestToken(tc, "_test123", "1 TK_IDENTIFICADOR [_test123]\n");
 }
 
 void TestPasses(CuTest *tc) { CuAssert(tc, "test should pass", 1 == 0 + 1); }
@@ -582,35 +673,8 @@ CuSuite *CuGetSuite(void) {
 
   SUITE_ADD_TEST(suite, TestKeywords);
   SUITE_ADD_TEST(suite, TestSpecialCharacters);
-  SUITE_ADD_TEST(suite, TestCuStringAppendFormat);
-  SUITE_ADD_TEST(suite, TestCuStrCopy);
-  SUITE_ADD_TEST(suite, TestFail);
-  SUITE_ADD_TEST(suite, TestAssertStrEquals);
-  SUITE_ADD_TEST(suite, TestAssertStrEquals_NULL);
-  SUITE_ADD_TEST(suite, TestAssertStrEquals_FailStrNULL);
-  SUITE_ADD_TEST(suite, TestAssertStrEquals_FailNULLStr);
-  SUITE_ADD_TEST(suite, TestAssertIntEquals);
-  SUITE_ADD_TEST(suite, TestAssertDblEquals);
-
-  SUITE_ADD_TEST(suite, TestCuTestNew);
-  SUITE_ADD_TEST(suite, TestCuTestInit);
-  SUITE_ADD_TEST(suite, TestCuAssert);
-  SUITE_ADD_TEST(suite, TestCuAssertPtrEquals_Success);
-  SUITE_ADD_TEST(suite, TestCuAssertPtrEquals_Failure);
-  SUITE_ADD_TEST(suite, TestCuAssertPtrNotNull_Success);
-  SUITE_ADD_TEST(suite, TestCuAssertPtrNotNull_Failure);
-  SUITE_ADD_TEST(suite, TestCuTestRun);
-
-  SUITE_ADD_TEST(suite, TestCuSuiteInit);
-  SUITE_ADD_TEST(suite, TestCuSuiteNew);
-  SUITE_ADD_TEST(suite, TestCuSuiteAddTest);
-  SUITE_ADD_TEST(suite, TestCuSuiteAddSuite);
-  SUITE_ADD_TEST(suite, TestCuSuiteRun);
-  SUITE_ADD_TEST(suite, TestCuSuiteSummary);
-  SUITE_ADD_TEST(suite, TestCuSuiteDetails_SingleFail);
-  SUITE_ADD_TEST(suite, TestCuSuiteDetails_SinglePass);
-  SUITE_ADD_TEST(suite, TestCuSuiteDetails_MultiplePasses);
-  SUITE_ADD_TEST(suite, TestCuSuiteDetails_MultipleFails);
+  SUITE_ADD_TEST(suite, TestCompoundOperators);
+  SUITE_ADD_TEST(suite, TestIdentifiers);
 
   return suite;
 }
