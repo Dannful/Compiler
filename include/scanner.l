@@ -5,6 +5,8 @@
 
 %%
 
+\/\/.*$ {}
+
 int return TK_PR_INT;
 float return TK_PR_FLOAT;
 if return TK_PR_IF;
