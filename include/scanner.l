@@ -6,6 +6,7 @@
 %%
 
 \/\/.*$ {}
+[[:space:]] {}
 
 int return TK_PR_INT;
 float return TK_PR_FLOAT;
@@ -27,5 +28,7 @@ return return TK_PR_RETURN;
 
 [0-9]+ return TK_LIT_INT;
 [0-9]*\.[0-9]+ return TK_LIT_FLOAT;
+
+. return TK_ERRO;
 
 \n { }
