@@ -1,16 +1,17 @@
 compile: ./src/main.c ./include/scanner.l
 	flex ./include/scanner.l
-	mv lex.yy.c ./include/lex.yy.c
-	gcc -lfl ./src/*.c ./include/lex.yy.c -o compiler
+	mkdir -p build
+	mv lex.yy.c ./build/lex.yy.c
+	gcc -lfl ./src/*.c ./build/lex.yy.c -o ./etapa1
 
-run: ./compiler
-	./compiler
+run: ./etapa1
+	./etapa1
 
 test: ./src/testing/*.c ./include/testing/*.h
-	gcc ./src/testing/*.c $(ls ./src/*.c | grep -v main.c) -o tests
-	./tests
+	mkdir -p build
+	gcc ./src/testing/*.c $(ls ./src/*.c | grep -v main.c) -o ./build/tests
+	./build/tests
 
 clean:
-	rm -f ./include/lex.yy.c
-	rm -f ./compiler
-	rm -f ./tests
+	rm -rf build
+	rm -f etapa1
