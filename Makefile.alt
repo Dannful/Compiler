@@ -1,0 +1,55 @@
+# Define the compiler and flags
+CC = gcc
+CFLAGS = -lfl -g -Iinclude
+
+# Define the source and build directories
+SRC_DIR = src
+OBJ_DIR = obj
+INC_DIR = include
+
+# Define the flex and bison files
+LEX_FILE = $(SRC_DIR)/scanner.l
+YACC_FILE = $(SRC_DIR)/parser.y
+
+# Define the output executable
+TARGET = etapa2
+
+# Find all .c files in the src directory
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+
+# Default target
+all: $(TARGET)
+
+# Rule to build the final executable
+$(TARGET): $(OBJS) $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parser.tab.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Rule to compile .c files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/parser.tab.h
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to generate lex.yy.c from .l file
+$(OBJ_DIR)/lex.yy.c: $(LEX_FILE)
+	@mkdir -p $(OBJ_DIR)
+	flex -o $@ $<
+
+# Rule to compile lex.yy.c
+$(OBJ_DIR)/lex.yy.o: $(OBJ_DIR)/lex.yy.c $(OBJ_DIR)/parser.tab.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to generate parser.tab.c and parser.tab.h from .y file
+$(OBJ_DIR)/parser.tab.c $(OBJ_DIR)/parser.tab.h: $(YACC_FILE)
+	@mkdir -p $(OBJ_DIR)
+	bison -d -o $(OBJ_DIR)/parser.tab.c $<
+
+# Rule to compile parser.tab.c
+$(OBJ_DIR)/parser.tab.o: $(OBJ_DIR)/parser.tab.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Clean up build files
+clean:
+	rm -rf $(OBJ_DIR) $(TARGET)
+
+.PHONY: all clean

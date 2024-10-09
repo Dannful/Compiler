@@ -1,5 +1,5 @@
 %{
-    #include "../include/tokens.h"
+    #include "../obj/parser.tab.h" //arquivo gerado com bison -d parser.y
 %}
 %option yylineno
 
@@ -30,5 +30,3 @@ return return TK_PR_RETURN;
 [0-9]*\.[0-9]+ return TK_LIT_FLOAT;
 
 . return TK_ERRO;
-
-\n { }
