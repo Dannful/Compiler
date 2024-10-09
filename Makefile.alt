@@ -52,4 +52,8 @@ $(OBJ_DIR)/parser.tab.o: $(OBJ_DIR)/parser.tab.c
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
 
+# Rule to run the executable
+run: $(TARGET)
+	./$(TARGET)
+
 .PHONY: all clean
