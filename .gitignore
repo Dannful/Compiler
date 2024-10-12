@@ -76,8 +76,5 @@ dkms.conf
 
 # End of https://www.toptal.com/developers/gitignore/api/c
 
-
-compiler
-tests
-lex.yy.c
 etapa*
+obj/

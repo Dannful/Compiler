@@ -7,6 +7,8 @@
 
 #include "../../include/testing/CuTest.h"
 
+#define OUT_FILE_PATH "./etapa2"
+
 /*-------------------------------------------------------------------------*
  * CuString Test
  *-------------------------------------------------------------------------*/
@@ -118,63 +120,51 @@ static void X_CompareAsserts(CuTest *tc, const char *file, int line,
   CuAssert_Line(tc, file, line, message, !mismatch);
 }
 
-void TestToken(CuTest *tc, char token[], char expected[]) {
-  system("make");
-  while (access("./etapa1", F_OK) != 0)
-    continue;
-  char message[1024];
-  snprintf(message, sizeof(message), "echo \"%s\" | ./etapa1", token);
-  printf("%s\n", message);
-  FILE *f = popen(message, "r");
-  char buffer[1024];
-  while (fgets(buffer, sizeof(buffer), f) != NULL)
-    ;
-  pclose(f);
-  CuAssertStrEquals(tc, expected, buffer);
+extern int parse_string(const char *in);
+
+void TestTokenReturnCode(CuTest *tc, char token[], int expected) {
+  CuAssertIntEquals(tc, expected, parse_string(token));
 }
 
 /*-------------------------------------------------------------------------*
  * CuTest Test
  *-------------------------------------------------------------------------*/
 
-void TestKeywords(CuTest *tc) {
-  TestToken(tc, "int", "1 TK_PR_INT [int]\n");
-  TestToken(tc, "float", "1 TK_PR_FLOAT [float]\n");
-  TestToken(tc, "if", "1 TK_PR_IF [if]\n");
-  TestToken(tc, "else", "1 TK_PR_ELSE [else]\n");
-  TestToken(tc, "while", "1 TK_PR_WHILE [while]\n");
-  TestToken(tc, "return", "1 TK_PR_RETURN [return]\n");
-}
-void TestSpecialCharacters(CuTest *tc) {
-  TestToken(tc, "-", "1 TK_ESPECIAL [-]\n");
-  TestToken(tc, "!", "1 TK_ESPECIAL [!]\n");
-  TestToken(tc, "*", "1 TK_ESPECIAL [*]\n");
-  TestToken(tc, "/", "1 TK_ESPECIAL [/]\n");
-  TestToken(tc, "%", "1 TK_ESPECIAL [%]\n");
-  TestToken(tc, "+", "1 TK_ESPECIAL [+]\n");
-  TestToken(tc, "<", "1 TK_ESPECIAL [<]\n");
-  TestToken(tc, ">", "1 TK_ESPECIAL [>]\n");
-  TestToken(tc, "{", "1 TK_ESPECIAL [{]\n");
-  TestToken(tc, "}", "1 TK_ESPECIAL [}]\n");
-  TestToken(tc, "(", "1 TK_ESPECIAL [(]\n");
-  TestToken(tc, ")", "1 TK_ESPECIAL [)]\n");
-  TestToken(tc, "=", "1 TK_ESPECIAL [=]\n");
-  TestToken(tc, ",", "1 TK_ESPECIAL [,]\n");
-  TestToken(tc, ";", "1 TK_ESPECIAL [;]\n");
-}
+void TestProgram(CuTest *tc) {
+  unsigned int code_success = 0, code_error = 1;
 
-void TestCompoundOperators(CuTest *tc) {
-  TestToken(tc, "<=", "1 TK_OC_LE [<=]\n");
-  TestToken(tc, ">=", "1 TK_OC_GE [>=]\n");
-  TestToken(tc, "==", "1 TK_OC_EQ [==]\n");
-  TestToken(tc, "!=", "1 TK_OC_NE [!=]\n");
-  TestToken(tc, "&", "1 TK_OC_AND [&]\n");
-  TestToken(tc, "|", "1 TK_OC_OR [|]\n");
-}
-
-void TestIdentifiers(CuTest *tc) {
-  TestToken(tc, "identifier", "1 TK_IDENTIFICADOR [identifier]\n");
-  TestToken(tc, "_test123", "1 TK_IDENTIFICADOR [_test123]\n");
+  TestTokenReturnCode(tc, "a = > float { romano(1 + 2 * 3); }", 0);
+  TestTokenReturnCode(tc, "banana", code_error);
+  TestTokenReturnCode(tc, "sum = a <- int | b <- int > int { return a + b; }",
+                      code_success);
+  TestTokenReturnCode(tc,
+                      "a = > float { romano(1 + 2 * 3); } sum = a <- int | b "
+                      "<- int > int { return a + b; }",
+                      code_success);
+  TestTokenReturnCode(tc, "func = {}", code_error);
+  TestTokenReturnCode(tc,
+                      "sum = first <- int | second <- int > int {"
+                      "  return aux_first + aux_second;"
+                      "}"
+                      "minus = first <- int | second <- int > int {"
+                      "  return sum(first, -second);"
+                      "}",
+                      code_success);
+  TestTokenReturnCode(tc,
+                      "max = first <- int | second <- int > int {"
+                      "  if (first > second) {"
+                      "    return first;"
+                      "  } else {"
+                      "    return second;"
+                      "  };"
+                      "}",
+                      code_success);
+  TestTokenReturnCode(tc,
+                      "get_pi = > float {"
+                      "  pi = 3.141519;"
+                      "  return pi;"
+                      "}",
+                      code_success);
 }
 
 void TestPasses(CuTest *tc) { CuAssert(tc, "test should pass", 1 == 0 + 1); }
@@ -671,10 +661,7 @@ void TestAssertDblEquals(CuTest *tc) {
 CuSuite *CuGetSuite(void) {
   CuSuite *suite = CuSuiteNew();
 
-  SUITE_ADD_TEST(suite, TestKeywords);
-  SUITE_ADD_TEST(suite, TestSpecialCharacters);
-  SUITE_ADD_TEST(suite, TestCompoundOperators);
-  SUITE_ADD_TEST(suite, TestIdentifiers);
+  SUITE_ADD_TEST(suite, TestProgram);
 
   return suite;
 }

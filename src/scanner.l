@@ -1,5 +1,5 @@
 %{
-    #include "../obj/parser.tab.h" //arquivo gerado com bison -d parser.y
+    #include "../obj/parser.tab.h"  // arquivo gerado com bison -d parser.y
 %}
 %option yylineno
 
@@ -30,3 +30,15 @@ return return TK_PR_RETURN;
 [0-9]*\.[0-9]+ return TK_LIT_FLOAT;
 
 . return TK_ERRO;
+
+%%
+
+int get_line_number(void) { return yylineno; }
+
+void set_input_string(const char* in) {
+    yy_scan_string(in);
+}
+
+void end_lexical_scan(void) {
+    yy_delete_buffer(YY_CURRENT_BUFFER);
+}

@@ -2,16 +2,13 @@
 
 ## Building
 
-In order to build, run
-
 ```
 make
 ```
 
 ## Testing
 
-In order to run all the tests, run
-
 ```
-make test
+make -f ./Makefile.test
+./obj/tests
 ```
