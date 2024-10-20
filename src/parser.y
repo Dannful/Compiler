@@ -55,7 +55,8 @@ parametro:
     | ;
 
 bloco_comando:
-    '{' lista_comandos_simples '}';
+    '{' lista_comandos_simples '}'
+    | '{' '}';
 
 lista_comandos_simples:
     lista_comandos_simples comando ';'
