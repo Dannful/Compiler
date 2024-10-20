@@ -1,3 +1,8 @@
+# Grupo C
+# Alunos:
+# Gustavo Sleman Lenz - 00290394
+# Vinicius Daniel Spadotto - 00341554
+
 # Define the compiler and flags
 CC = gcc
 CFLAGS = -lfl -g -Iinclude

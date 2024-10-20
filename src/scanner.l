@@ -1,3 +1,10 @@
+/*
+Grupo C
+Alunos:
+Gustavo Sleman Lenz - 00290394
+Vinicius Daniel Spadotto - 00341554
+*/
+
 %{
     #include "../obj/parser.tab.h"  // arquivo gerado com bison -d parser.y
 %}

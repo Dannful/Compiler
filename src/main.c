@@ -1,4 +1,11 @@
 /*
+Grupo C
+Alunos:
+Gustavo Sleman Lenz - 00290394
+Vinicius Daniel Spadotto - 00341554
+*/
+
+/*
 Função principal para realização da análise sintática.
 
 Este arquivo será posterioremente substituído, não acrescente nada.

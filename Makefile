@@ -1,3 +1,8 @@
+# Grupo C
+# Alunos:
+# Gustavo Sleman Lenz - 00290394
+# Vinicius Daniel Spadotto - 00341554
+
 ./etapa2: ./obj/parser.tab.o ./obj/lex.yy.o ./obj/main.o
 	gcc -o etapa2 ./obj/lex.yy.o ./obj/parser.tab.o ./obj/main.o -lfl
 
