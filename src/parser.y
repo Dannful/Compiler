@@ -7,6 +7,7 @@ Vinicius Daniel Spadotto - 00341554
 
 %{
     #include <stdio.h>
+    extern int get_line_number(void);
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
@@ -151,7 +152,7 @@ unario:
 
 %%
 void yyerror(char const *mensagem) {
-    fprintf(stderr, "%s\n", mensagem);
+    fprintf(stderr, "Line %i: %s\n", get_line_number(), mensagem);
 }
 
 void set_input_string(const char* in);
