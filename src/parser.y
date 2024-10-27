@@ -75,7 +75,8 @@ comando:
     | atribuicao
     | chamada_funcao
     | retorno
-    | controle_fluxo;
+    | controle_fluxo
+    | bloco_comando ;
 
 declaracao:
     tipo lista_variavel;
