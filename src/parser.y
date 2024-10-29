@@ -12,6 +12,17 @@ Vinicius Daniel Spadotto - 00341554
     void yyerror (char const *mensagem);
 %}
 
+%code requires { #include "asd.h" }
+
+%union {
+  struct lex_value {
+    unsigned int line_number;
+    char token_type;
+    char *value;
+  } lex_value;
+  asd_tree *tree;
+}
+
 %define parse.error verbose
 %token TK_PR_INT
 %token TK_PR_FLOAT
@@ -25,10 +36,14 @@ Vinicius Daniel Spadotto - 00341554
 %token TK_OC_NE
 %token TK_OC_AND
 %token TK_OC_OR
-%token TK_IDENTIFICADOR
-%token TK_LIT_INT
-%token TK_LIT_FLOAT
+%token<lex_value> TK_IDENTIFICADOR
+%token<lex_value> TK_LIT_INT
+%token<lex_value> TK_LIT_FLOAT
 %token TK_ERRO
+
+%type<tree> lista_de_funcoes
+%type<tree> lista_comandos_simples
+%type<tree> expressao
 
 %%
 

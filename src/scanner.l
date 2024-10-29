@@ -31,10 +31,25 @@ return return TK_PR_RETURN;
 & return TK_OC_AND;
 \| return TK_OC_OR;
 
-[a-z_][a-z_0-9]* return TK_IDENTIFICADOR;
+[a-z_][a-z_0-9]* {
+  yylval.lex_value.line_number = yylineno;
+  yylval.lex_value.token_type = 'I';
+  yylval.lex_value.value = strdup(yytext);
+  return TK_IDENTIFICADOR;
+}
 
-[0-9]+ return TK_LIT_INT;
-[0-9]*\.[0-9]+ return TK_LIT_FLOAT;
+[0-9]+ {
+  yylval.lex_value.line_number = yylineno;
+  yylval.lex_value.token_type = 'L';
+  yylval.lex_value.value = strdup(yytext);
+  return TK_LIT_INT;
+}
+[0-9]*\.[0-9]+ {
+  yylval.lex_value.line_number = yylineno;
+  yylval.lex_value.token_type = 'L';
+  yylval.lex_value.value = strdup(yytext);
+  return TK_LIT_FLOAT;
+}
 
 . return TK_ERRO;
 
