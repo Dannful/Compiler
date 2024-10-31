@@ -11,6 +11,8 @@ extern int yyparse(void);
 extern int yylex_destroy(void);
 void *arvore = NULL;
 void print_tree(asd_tree_t *tree, unsigned int indentation_level) {
+  if (tree == NULL)
+    return;
   for (int i = 0; i < indentation_level; i++)
     printf(" ");
   printf("%s\n", tree->label);

@@ -11,7 +11,7 @@ Vinicius Daniel Spadotto - 00341554
     #include "../include/asd.h"
     extern void *arvore;
     extern int get_line_number(void);
-    asd_tree_t *children[5] = {0};
+    asd_tree_t *children[4] = {0};
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
@@ -81,7 +81,9 @@ programa:
       $$ = $1;
       arvore = $1;
     }
-    | ;
+    |  {
+      $$ = NULL;
+    }
 
 lista_de_funcoes:
     lista_de_funcoes funcao {
@@ -125,39 +127,40 @@ literal:
 
 lista_de_parametros:
     lista_de_parametros TK_OC_OR parametro {
-      if(children[1]) {
-        asd_add_child(children[1], $3);
-      } else {
-        asd_add_child($$, $3);
-      }
-      children[1] = $3;
+      $$ = NULL;
     }
     | parametro {
-      $$ = $1;
+      $$ = NULL;
     }
 
 parametro:
     TK_IDENTIFICADOR '<' '-' tipo {
-      $$ = asd_new("parameter");
-      asd_add_child($$, asd_new($1.value));
-      asd_add_child($$, $4);
+      $$ = NULL;
     }
-    | ;
+    | {
+      $$ = NULL;
+    }
 
 bloco_comando:
     '{' lista_comandos_simples '}' {
       $$ = $2;
     }
-    | '{' '}';
+    | '{' '}' {
+      $$ = NULL;
+    }
 
 lista_comandos_simples:
     lista_comandos_simples comando ';' {
-      if(children[2]) {
-        asd_add_child(children[2], $2);
-      } else {
-        asd_add_child($$, $2);
+      if(strcmp($1->label, "skip") == 0) {
+        $$ = $2;
+      } else if(strcmp($2->label, "skip") != 0) {
+        if(children[1]) {
+          asd_add_child(children[1], $2);
+        } else {
+          asd_add_child($$, $2);
+        }
+        children[1] = $2;
       }
-      children[2] = $2;
     }
     | comando ';' {
       $$ = $1;
@@ -185,19 +188,17 @@ comando:
 
 declaracao:
     tipo lista_variavel {
-      $$ = asd_new("declaration");
-      asd_add_child($$, $1);
-      asd_add_child($$, $2);
+      $$ = $2;
     }
 
 lista_variavel:
     lista_variavel ',' variavel {
-      if(children[3]) {
-        asd_add_child(children[3], $3);
+      if(children[2]) {
+        asd_add_child(children[2], $3);
       } else {
         asd_add_child($$, $3);
       }
-      children[3] = $3;
+      children[2] = $3;
     }
     | variavel {
       $$ = $1;
@@ -205,36 +206,37 @@ lista_variavel:
 
 variavel:
     TK_IDENTIFICADOR {
-      $$ = asd_new("variable");
-      asd_add_child($$, asd_new($1.value));
+      $$ = asd_new("skip");
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
-      $$ = asd_new("variable");
+      $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
     }
 
 atribuicao:
     TK_IDENTIFICADOR '=' expressao {
-      $$ = asd_new("attribution");
+      $$ = asd_new("=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
     }
 
 chamada_funcao:
     TK_IDENTIFICADOR '(' lista_de_argumentos ')' {
-      $$ = asd_new($1.value);
+      char node_label[strlen($1.value) + 5];
+      sprintf(node_label, "call %s", $1.value);
+      $$ = asd_new(node_label);
       asd_add_child($$, $3);
     }
 
 lista_de_argumentos:
     lista_de_argumentos ',' expressao {
-      if(children[4]) {
-        asd_add_child(children[4], $3);
+      if(children[3]) {
+        asd_add_child(children[3], $3);
       } else {
         asd_add_child($$, $3);
       }
-      children[4] = $3;
+      children[3] = $3;
     }
     | expressao {
       $$ = $1;
