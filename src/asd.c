@@ -38,14 +38,14 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child) {
   tree->children[tree->number_of_children - 1] = child;
 }
 
-static void _asd_print(FILE *foutput, asd_tree_t *tree, int profundidade) {
+static void _asd_print(FILE *foutput, asd_tree_t *tree) {
   int i;
   if (tree != NULL) {
-    fprintf(foutput, "%d%*s: Nó '%s' tem %d filhos:\n", profundidade,
-            profundidade * 2, "", tree->label, tree->number_of_children);
-    for (i = 0; i < tree->number_of_children; i++) {
-      _asd_print(foutput, tree->children[i], profundidade + 1);
-    }
+    fprintf(foutput, "%p [label=\"%s\"];\n", tree, tree->label);
+    for (int child = 0; child < tree->number_of_children; child++)
+      fprintf(foutput, "%p, %p\n", tree, tree->children[child]);
+    for (int child = 0; child < tree->number_of_children; child++)
+      _asd_print(foutput, tree->children[child]);
   } else {
     printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
   }
@@ -54,7 +54,7 @@ static void _asd_print(FILE *foutput, asd_tree_t *tree, int profundidade) {
 void asd_print(asd_tree_t *tree) {
   FILE *foutput = stderr;
   if (tree != NULL) {
-    _asd_print(foutput, tree, 0);
+    _asd_print(foutput, tree);
   } else {
     printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
   }

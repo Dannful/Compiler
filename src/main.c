@@ -10,16 +10,7 @@ Vinicius Daniel Spadotto - 00341554
 extern int yyparse(void);
 extern int yylex_destroy(void);
 void *arvore = NULL;
-void print_tree(asd_tree_t *tree, unsigned int indentation_level) {
-  if (tree == NULL)
-    return;
-  for (int i = 0; i < indentation_level; i++)
-    printf(" ");
-  printf("%s\n", tree->label);
-  for (int i = 0; i < tree->number_of_children; i++)
-    print_tree(tree->children[i], indentation_level + 1);
-}
-void exporta(void *arvore) { print_tree((asd_tree_t *)arvore, 0); }
+void exporta(void *arvore) { asd_print((asd_tree_t *)arvore); }
 int main(int argc, char **argv) {
   int ret = yyparse();
   exporta(arvore);
