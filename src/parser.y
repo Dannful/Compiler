@@ -8,8 +8,10 @@ Vinicius Daniel Spadotto - 00341554
 %{
     #include <string.h>
     #include <stdio.h>
+    #include "../include/asd.h"
     extern void *arvore;
     extern int get_line_number(void);
+    asd_tree_t *children[5] = {0};
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
@@ -83,8 +85,12 @@ programa:
 
 lista_de_funcoes:
     lista_de_funcoes funcao {
-      asd_add_child($1, $2);
-      $$ = $1;
+      if(children[0]) {
+        asd_add_child(children[0], $2);
+      } else {
+        asd_add_child($$, $2);
+      }
+      children[0] = $2;
     }
     | funcao {
       $$ = $1;
@@ -119,8 +125,12 @@ literal:
 
 lista_de_parametros:
     lista_de_parametros TK_OC_OR parametro {
-      asd_add_child($1, $3);
-      $$ = $1;
+      if(children[1]) {
+        asd_add_child(children[1], $3);
+      } else {
+        asd_add_child($$, $3);
+      }
+      children[1] = $3;
     }
     | parametro {
       $$ = $1;
@@ -142,8 +152,12 @@ bloco_comando:
 
 lista_comandos_simples:
     lista_comandos_simples comando ';' {
-      asd_add_child($1, $2);
-      $$ = $1;
+      if(children[2]) {
+        asd_add_child(children[2], $2);
+      } else {
+        asd_add_child($$, $2);
+      }
+      children[2] = $2;
     }
     | comando ';' {
       $$ = $1;
@@ -178,8 +192,12 @@ declaracao:
 
 lista_variavel:
     lista_variavel ',' variavel {
-      asd_add_child($1, $3);
-      $$ = $1;
+      if(children[3]) {
+        asd_add_child(children[3], $3);
+      } else {
+        asd_add_child($$, $3);
+      }
+      children[3] = $3;
     }
     | variavel {
       $$ = $1;
@@ -211,7 +229,12 @@ chamada_funcao:
 
 lista_de_argumentos:
     lista_de_argumentos ',' expressao {
-      asd_add_child($1, $3);
+      if(children[4]) {
+        asd_add_child(children[4], $3);
+      } else {
+        asd_add_child($$, $3);
+      }
+      children[4] = $3;
     }
     | expressao {
       $$ = $1;
