@@ -151,9 +151,9 @@ bloco_comando:
 
 lista_comandos_simples:
     lista_comandos_simples comando ';' {
-      if(strcmp($1->label, "skip") == 0) {
+      if($1 == NULL) {
         $$ = $2;
-      } else if(strcmp($2->label, "skip") != 0) {
+      } else if($2 != NULL) {
         if(children[1]) {
           asd_add_child(children[1], $2);
         } else {
@@ -206,7 +206,7 @@ lista_variavel:
 
 variavel:
     TK_IDENTIFICADOR {
-      $$ = asd_new("skip");
+      $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
       $$ = asd_new("<=");

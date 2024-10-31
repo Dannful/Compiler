@@ -5,7 +5,7 @@
 
 ./obj/tests: ./src/testing/*.c ./include/testing/*.h ./obj/parser.tab.c ./obj/lex.yy.c
 	mkdir -p obj
-	gcc ./src/testing/*.c $(ls ./src/*.c | grep -v main.c) ./obj/parser.tab.c ./obj/lex.yy.c -o ./obj/tests -lfl
+	gcc ./src/testing/*.c ./src/asd.c ./obj/parser.tab.c ./obj/lex.yy.c -o ./obj/tests -lfl
 
 ./obj/parser.tab.c: ./src/parser.y ./obj/
 	bison -d ./src/parser.y

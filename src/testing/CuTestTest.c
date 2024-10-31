@@ -1,3 +1,4 @@
+#include "../../include/asd.h"
 #include "unistd.h"
 #include <assert.h>
 #include <setjmp.h>
@@ -121,9 +122,40 @@ static void X_CompareAsserts(CuTest *tc, const char *file, int line,
 }
 
 extern int parse_string(const char *in);
+void *arvore;
 
-void TestTokenReturnCode(CuTest *tc, char token[], int expected) {
-  CuAssertIntEquals(tc, expected, parse_string(token));
+void _print_asd(char *buffer, unsigned long buffer_size, asd_tree_t *tree,
+                unsigned int level) {
+  if (tree == NULL)
+    return;
+  unsigned long label_size = strlen(tree->label);
+  unsigned long size = 2 * level + label_size + 1;
+  unsigned long current_text_size = strlen(buffer);
+  if (current_text_size + size > buffer_size - 1) {
+    unsigned long new_size = current_text_size + size - buffer_size + 1024;
+    buffer = realloc(buffer, new_size);
+    buffer_size = new_size;
+  }
+  for (int i = 0; i < level; i++)
+    memcpy(buffer + strlen(buffer), "  ", 2);
+  memcpy(buffer + strlen(buffer), tree->label, label_size);
+  memcpy(buffer + strlen(buffer), "\n", 1);
+  for (int child = 0; child < tree->number_of_children; child++) {
+    _print_asd(buffer, buffer_size, tree->children[child], level + 1);
+  }
+}
+
+char *print_asd(asd_tree_t *tree) {
+  char *output = calloc(sizeof(char), 1024);
+  _print_asd(output, sizeof(char) * 1024, tree, 0);
+  return output;
+}
+
+void TestBuiltAST(CuTest *tc, char token[], char expected[]) {
+  parse_string(token);
+  char *result = print_asd(arvore);
+  CuAssertStrEquals(tc, expected, result);
+  free(result);
 }
 
 /*-------------------------------------------------------------------------*
@@ -131,40 +163,17 @@ void TestTokenReturnCode(CuTest *tc, char token[], int expected) {
  *-------------------------------------------------------------------------*/
 
 void TestProgram(CuTest *tc) {
-  unsigned int code_success = 0, code_error = 1;
-
-  TestTokenReturnCode(tc, "a = > float { romano(1 + 2 * 3); }", 0);
-  TestTokenReturnCode(tc, "banana", code_error);
-  TestTokenReturnCode(tc, "sum = a <- int | b <- int > int { return a + b; }",
-                      code_success);
-  TestTokenReturnCode(tc,
-                      "a = > float { romano(1 + 2 * 3); } sum = a <- int | b "
-                      "<- int > int { return a + b; }",
-                      code_success);
-  TestTokenReturnCode(tc, "func = {}", code_error);
-  TestTokenReturnCode(tc,
-                      "sum = first <- int | second <- int > int {"
-                      "  return aux_first + aux_second;"
-                      "}"
-                      "minus = first <- int | second <- int > int {"
-                      "  return sum(first, -second);"
-                      "}",
-                      code_success);
-  TestTokenReturnCode(tc,
-                      "max = first <- int | second <- int > int {"
-                      "  if (first > second) {"
-                      "    return first;"
-                      "  } else {"
-                      "    return second;"
-                      "  };"
-                      "}",
-                      code_success);
-  TestTokenReturnCode(tc,
-                      "get_pi = > float {"
-                      "  pi = 3.141519;"
-                      "  return pi;"
-                      "}",
-                      code_success);
+  TestBuiltAST(tc, "func = > int { }", "func\n");
+  TestBuiltAST(tc,
+               "func = first <- int | second <- int > int { int test <= 123; }",
+               "func\n  <=\n    test\n    123\n");
+  TestBuiltAST(
+      tc,
+      "sum = first <- int | second <- int > int { return first + second; }"
+      "myfunc = > int { return sum(3 * 4, 1 * 9); }",
+      "sum\n  return\n    +\n      first\n      second\n  myfunc\n    "
+      "return\n      call sum\n        *\n          3\n          4\n          "
+      "*\n            1\n            9\n");
 }
 
 void TestPasses(CuTest *tc) { CuAssert(tc, "test should pass", 1 == 0 + 1); }
