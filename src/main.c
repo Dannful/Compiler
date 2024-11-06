@@ -14,6 +14,7 @@ void exporta(void *arvore) { asd_print((asd_tree_t *)arvore); }
 int main(int argc, char **argv) {
   int ret = yyparse();
   exporta(arvore);
+  asd_free(arvore);
   yylex_destroy();
   return ret;
 }

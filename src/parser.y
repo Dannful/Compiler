@@ -8,10 +8,8 @@ Vinicius Daniel Spadotto - 00341554
 %{
     #include <string.h>
     #include <stdio.h>
-    #include "../include/asd.h"
     extern void *arvore;
     extern int get_line_number(void);
-    asd_tree_t *children[4] = {0};
     int yylex(void);
     void yyerror (char const *mensagem);
 %}
@@ -86,13 +84,8 @@ programa:
     }
 
 lista_de_funcoes:
-    lista_de_funcoes funcao {
-      if(children[0]) {
-        asd_add_child(children[0], $2);
-      } else {
-        asd_add_child($$, $2);
-      }
-      children[0] = $2;
+    funcao lista_de_funcoes {
+      asd_add_child($1, $2);
     }
     | funcao {
       $$ = $1;
@@ -150,16 +143,11 @@ bloco_comando:
     }
 
 lista_comandos_simples:
-    lista_comandos_simples comando ';' {
+    comando ';' lista_comandos_simples {
       if($1 == NULL) {
-        $$ = $2;
-      } else if($2 != NULL) {
-        if(children[1]) {
-          asd_add_child(children[1], $2);
-        } else {
-          asd_add_child($$, $2);
-        }
-        children[1] = $2;
+        $$ = $3;
+      } else {
+        asd_add_child($1, $3);
       }
     }
     | comando ';' {
@@ -192,13 +180,8 @@ declaracao:
     }
 
 lista_variavel:
-    lista_variavel ',' variavel {
-      if(children[2]) {
-        asd_add_child(children[2], $3);
-      } else {
-        asd_add_child($$, $3);
-      }
-      children[2] = $3;
+    variavel ',' lista_variavel {
+      asd_add_child($1, $3);
     }
     | variavel {
       $$ = $1;
@@ -230,13 +213,8 @@ chamada_funcao:
     }
 
 lista_de_argumentos:
-    lista_de_argumentos ',' expressao {
-      if(children[3]) {
-        asd_add_child(children[3], $3);
-      } else {
-        asd_add_child($$, $3);
-      }
-      children[3] = $3;
+    expressao ',' lista_de_argumentos {
+      asd_add_child($1, $3);
     }
     | expressao {
       $$ = $1;
