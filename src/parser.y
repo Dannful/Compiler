@@ -384,3 +384,5 @@ int parse_string(const char* in) {
   end_lexical_scan();
   return rv;
 }
+
+void exporta(void *arvore) { asd_print((asd_tree_t *)arvore); }
