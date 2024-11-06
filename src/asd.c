@@ -1,4 +1,4 @@
-#include "../include/asd.h"
+#include "asd.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

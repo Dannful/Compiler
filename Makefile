@@ -3,20 +3,48 @@
 # Gustavo Sleman Lenz - 00290394
 # Vinicius Daniel Spadotto - 00341554
 
-./etapa2: ./src/*.c ./obj/*.c
-	gcc ./src/*.c ./obj/*.c -o etapa3 -lfl
+CC = gcc
+INCLUDES = obj include
+CFLAGS = -lfl -g $(foreach dir,$(INCLUDES),-I$(dir))
 
-./obj/parser.tab.c: ./src/parser.y ./obj/
-	bison -d ./src/parser.y
-	mv ./parser.tab.c ./obj/parser.tab.c
-	mv ./parser.tab.h ./obj/parser.tab.h
+SRC_DIR = src
+OBJ_DIR = obj
 
-./obj/lex.yy.c: ./src/scanner.l ./obj/
-	flex -o ./obj/lex.yy.c ./src/scanner.l
+FLEX_FILE = $(SRC_DIR)/scanner.l
+BISON_FILE = $(SRC_DIR)/parser.y
 
-./obj/:
-	mkdir -p obj
+TARGET = etapa3
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS) $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parser.tab.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/parser.tab.h
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/lex.yy.c: $(FLEX_FILE)
+	@mkdir -p $(OBJ_DIR)
+	flex -o $@ $<
+
+$(OBJ_DIR)/lex.yy.o: $(OBJ_DIR)/lex.yy.c $(OBJ_DIR)/parser.tab.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/parser.tab.c $(OBJ_DIR)/parser.tab.h: $(BISON_FILE)
+	@mkdir -p $(OBJ_DIR)
+	bison -d -o $(OBJ_DIR)/parser.tab.c $<
+
+$(OBJ_DIR)/parser.tab.o: $(OBJ_DIR)/parser.tab.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -rf obj
-	rm -f etapa2
+	rm -rf $(OBJ_DIR) $(TARGET)
+
+run: $(TARGET)
+	./$(TARGET)
+
+.PHONY: all clean

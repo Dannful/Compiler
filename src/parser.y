@@ -14,7 +14,7 @@ Vinicius Daniel Spadotto - 00341554
     void yyerror (char const *mensagem);
 %}
 
-%code requires { #include "../include/asd.h" }
+%code requires { #include "asd.h" }
 
 %union {
   struct lex_value {

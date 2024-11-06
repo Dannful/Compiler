@@ -6,7 +6,7 @@ Vinicius Daniel Spadotto - 00341554
 */
 
 %{
-    #include "../obj/parser.tab.h"  // arquivo gerado com bison -d parser.y
+    #include "parser.tab.h"  // arquivo gerado com bison -d parser.y
 %}
 %option yylineno
 
