@@ -144,7 +144,7 @@ bloco_comando:
 
 lista_comandos_simples:
     comando ';' lista_comandos_simples {
-      if($1 == NULL) {
+      if ($1 == NULL) {
         $$ = $3;
       } else {
         asd_add_child($1, $3);
@@ -181,7 +181,11 @@ declaracao:
 
 lista_variavel:
     variavel ',' lista_variavel {
-      asd_add_child($1, $3);
+      if ($1 == NULL) {
+        $$ = $3;
+      } else {
+        asd_add_child($1, $3);
+      }
     }
     | variavel {
       $$ = $1;

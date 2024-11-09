@@ -1,4 +1,5 @@
 #include "asd.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,8 +31,7 @@ void asd_free(asd_tree_t *tree) {
 }
 
 void asd_add_child(asd_tree_t *tree, asd_tree_t *child) {
-  if (tree == NULL || child == NULL)
-    return;
+  if (tree == NULL || child == NULL) return;
   tree->number_of_children++;
   tree->children =
       realloc(tree->children, tree->number_of_children * sizeof(asd_tree_t *));
@@ -74,6 +74,9 @@ static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree) {
 }
 
 void asd_print_graphviz(asd_tree_t *tree) {
+  if (tree == NULL) {
+    return;
+  }
   FILE *foutput = fopen(ARQUIVO_SAIDA, "w+");
   if (foutput == NULL) {
     printf("Erro: %s não pude abrir o arquivo [%s] para escrita.\n",
