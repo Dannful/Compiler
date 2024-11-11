@@ -60,7 +60,7 @@ static void _asd_print(FILE *foutput, asd_tree_t *tree) {
 }
 
 void asd_print(asd_tree_t *tree) {
-  FILE *foutput = stderr;
+  FILE *foutput = stdout;
   if (tree != NULL) {
     _asd_print(foutput, tree);
   } else {
