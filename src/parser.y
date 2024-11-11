@@ -361,7 +361,7 @@ unario:
       asd_add_child($$, $2);
     }
     | '-' unario {
-      $$ = asd_new("!");
+      $$ = asd_new("-");
       asd_add_child($$, $2);
     }
     | literal {
