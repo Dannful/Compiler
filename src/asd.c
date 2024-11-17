@@ -4,9 +4,10 @@ Alunos:
 Gustavo Sleman Lenz - 00290394
 Vinicius Daniel Spadotto - 00341554
 
-Arquivo obtido e alterado a partir dos arquivos disponibilizados pelo professor no Moodle.
+Arquivo obtido e alterado a partir dos arquivos disponibilizados pelo professor
+no Moodle.
 */
-#include "asd.h"
+#include "../include/asd.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,26 +21,26 @@ asd_tree_t *asd_new(const char *label) {
     ret->label = strdup(label);
     ret->number_of_children = 0;
     ret->children = NULL;
+    ret->data_type = UNKNOWN;
   }
   return ret;
 }
 
 void asd_free(asd_tree_t *tree) {
-  if (tree != NULL) {
-    int i;
-    for (i = 0; i < tree->number_of_children; i++) {
-      asd_free(tree->children[i]);
-    }
-    free(tree->children);
-    free(tree->label);
-    free(tree);
-  } else {
-    printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+  if (tree == NULL)
+    return;
+  int i;
+  for (i = 0; i < tree->number_of_children; i++) {
+    asd_free(tree->children[i]);
   }
+  free(tree->children);
+  free(tree->label);
+  free(tree);
 }
 
 void asd_add_child(asd_tree_t *tree, asd_tree_t *child) {
-  if (tree == NULL || child == NULL) return;
+  if (tree == NULL || child == NULL)
+    return;
   tree->number_of_children++;
   tree->children =
       realloc(tree->children, tree->number_of_children * sizeof(asd_tree_t *));
@@ -60,31 +61,26 @@ static void _asd_print(FILE *foutput, asd_tree_t *tree) {
 }
 
 void asd_print(asd_tree_t *tree) {
+  if (tree == NULL)
+    return;
   FILE *foutput = stdout;
-  if (tree != NULL) {
-    _asd_print(foutput, tree);
-  } else {
-    printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
-  }
+  _asd_print(foutput, tree);
 }
 
 static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree) {
+  if (tree == NULL)
+    return;
   int i;
-  if (tree != NULL) {
-    fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, tree->label);
-    for (i = 0; i < tree->number_of_children; i++) {
-      fprintf(foutput, "  %ld -> %ld;\n", (long)tree, (long)tree->children[i]);
-      _asd_print_graphviz(foutput, tree->children[i]);
-    }
-  } else {
-    printf("Erro: %s recebeu parâmetro tree = %p.\n", __FUNCTION__, tree);
+  fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, tree->label);
+  for (i = 0; i < tree->number_of_children; i++) {
+    fprintf(foutput, "  %ld -> %ld;\n", (long)tree, (long)tree->children[i]);
+    _asd_print_graphviz(foutput, tree->children[i]);
   }
 }
 
 void asd_print_graphviz(asd_tree_t *tree) {
-  if (tree == NULL) {
+  if (tree == NULL)
     return;
-  }
   FILE *foutput = fopen(ARQUIVO_SAIDA, "w+");
   if (foutput == NULL) {
     printf("Erro: %s não pude abrir o arquivo [%s] para escrita.\n",

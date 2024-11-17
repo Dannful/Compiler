@@ -17,6 +17,11 @@ Vinicius Daniel Spadotto - 00341554
     void yyerror (char const *mensagem);
     Stack *tables_stack = NULL;
     Stack *get_tables_stack();
+
+    #define VARIABLE_ALREADY_DECLARED "Variável de nome \"%s\" já declarada na linha %d.\n"
+    #define UNDECLARED_IDENTIFIER "Identificador \"%s\" referido na linha %d não declarado.\n"
+    #define VARIABLE_AS_FUNCTION "Esperava-se um identificador de função na linha %d, mas \"%s\" refere-se a uma variável da linha %d.\n"
+    #define FUNCTION_AS_VARIABLE "Esperava-se um identificador de variável na linha %d, mas \"%s\" refere-se a uma função da linha %d.\n"
 %}
 
 %code requires { #include "asd.h" }
@@ -131,9 +136,11 @@ tipo:
 literal:
     TK_LIT_FLOAT {
       $$ = asd_new(strdup($1.value));
+      $$->data_type = FLOAT;
     }
     | TK_LIT_INT {
       $$ = asd_new(strdup($1.value));
+      $$->data_type = INT;
     }
 
 lista_de_parametros:
@@ -222,15 +229,21 @@ lista_variavel:
 variavel:
     TK_IDENTIFICADOR {
       Table *table = stack_peek(get_tables_stack());
-      if(table_has(table, $1.value))
+      TableEntry *foundValue = table_get(table, $1.value);
+      if(foundValue != NULL) {
+        printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
+      }
       table_set_value(table, $1.value, VARIABLE, "");
       $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
       Table *table = stack_peek(get_tables_stack());
-      if(table_has(table, $1.value))
+      TableEntry *foundValue = table_get(table, $1.value);
+      if(foundValue != NULL) {
+        printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
+      }
       table_set_value(table, $1.value, VARIABLE, "");
       $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
@@ -239,7 +252,17 @@ variavel:
 
 atribuicao:
     TK_IDENTIFICADOR '=' expressao {
+      TableEntry *entry = table_search(get_tables_stack(), $1.value);
+      if(entry == NULL) {
+        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        return ERR_UNDECLARED;
+      }
+      if(entry->entry_type == FUNCTION) {
+        printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
+        return ERR_FUNCTION;
+      }
       $$ = asd_new("=");
+      $$->data_type = entry->data_type;
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
     }
@@ -247,10 +270,14 @@ atribuicao:
 chamada_funcao:
     TK_IDENTIFICADOR '(' lista_de_argumentos ')' {
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
-      if(entry == NULL)
+      if(entry == NULL) {
+        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
         return ERR_UNDECLARED;
-      if(entry->entry_type == VARIABLE)
+      }
+      if(entry->entry_type == VARIABLE) {
+        printf(VARIABLE_AS_FUNCTION, get_line_number(), $1.value, entry->line);
         return ERR_VARIABLE;
+      }
       char node_label[strlen($1.value) + 5];
       sprintf(node_label, "call %s", $1.value);
       $$ = asd_new(node_label);
@@ -301,6 +328,11 @@ construcao_iterativa:
 expressao:
     expressao TK_OC_OR operando_and {
       $$ = asd_new("|");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -311,6 +343,11 @@ expressao:
 operando_and:
     operando_and TK_OC_AND operando_eq {
       $$ = asd_new("&");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -321,11 +358,21 @@ operando_and:
 operando_eq:
     operando_eq TK_OC_NE operando_bool {
       $$ = asd_new("!=");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | operando_eq TK_OC_EQ operando_bool {
       $$ = asd_new("==");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -336,21 +383,41 @@ operando_eq:
 operando_bool:
     operando_bool TK_OC_GE operando_sum {
       $$ = asd_new(">=");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | operando_bool TK_OC_LE operando_sum {
       $$ = asd_new("<=");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | operando_bool '>' operando_sum {
       $$ = asd_new(">");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | operando_bool '<' operando_sum {
       $$ = asd_new("<");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -361,11 +428,21 @@ operando_bool:
 operando_sum:
     operando_sum '-' fator {
       $$ = asd_new("-");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | operando_sum '+' fator {
       $$ = asd_new("+");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -376,16 +453,31 @@ operando_sum:
 fator:
     fator '%' unario {
       $$ = asd_new("%");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | fator '/' unario {
       $$ = asd_new("/");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
     | fator '*' unario {
       $$ = asd_new("*");
+      if($1->data_type == FLOAT || $3->data_type == FLOAT) {
+        $$->data_type = FLOAT;
+      } else {
+        $$->data_type = INT;
+      }
       asd_add_child($$, $1);
       asd_add_child($$, $3);
     }
@@ -411,10 +503,14 @@ unario:
     | TK_IDENTIFICADOR {
       Table *table = stack_peek(get_tables_stack());
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
-      if(entry == NULL)
+      if(entry == NULL) {
+        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
         return ERR_UNDECLARED;
-      if(entry->entry_type == FUNCTION)
+      }
+      if(entry->entry_type == FUNCTION) {
+        printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
         return ERR_FUNCTION;
+      }
       $$ = asd_new($1.value);
     }
     | chamada_funcao {
