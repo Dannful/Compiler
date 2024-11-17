@@ -48,6 +48,17 @@ Table *stack_pop(Stack *stack) {
   return result;
 }
 
+TableEntry *table_search(Stack *stack, char *key) {
+  StackNode *node = stack->tail;
+  while (node != NULL) {
+    TableEntry *entry = table_get(node->value, key);
+    if (entry != NULL)
+      return entry;
+    node = node->previous;
+  }
+  return NULL;
+}
+
 Table *stack_peek(Stack *stack) {
   if (stack->count == 0)
     return NULL;

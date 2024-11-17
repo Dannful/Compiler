@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef enum { IDENTIFIER = 0, FUNCTION = 1 } EntryType;
+typedef enum { VARIABLE = 0, FUNCTION = 1 } EntryType;
 typedef enum { INT = 0, FLOAT = 1, UNKNOWN = 2 } EntryDataType;
 
 typedef struct {

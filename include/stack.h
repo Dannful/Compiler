@@ -21,4 +21,5 @@ void stack_push(Stack *stack, Table *value);
 Table *stack_pop(Stack *stack);
 Table *stack_peek(Stack *stack);
 void stack_destroy(Stack *list);
+TableEntry *table_search(Stack *stack, char *key);
 #endif

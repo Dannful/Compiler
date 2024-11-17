@@ -4,7 +4,8 @@ Alunos:
 Gustavo Sleman Lenz - 00290394
 Vinicius Daniel Spadotto - 00341554
 
-Arquivo obtido e alterado a partir dos arquivos disponibilizados pelo professor no Moodle.
+Arquivo obtido e alterado a partir dos arquivos disponibilizados pelo professor
+no Moodle.
 */
 #ifndef _ARVORE_H_
 #define _ARVORE_H_

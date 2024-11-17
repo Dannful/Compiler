@@ -108,10 +108,10 @@ remover_tabela_corpo: {
 
 cabecalho_funcao:
     TK_IDENTIFICADOR '=' gerar_tabela_corpo lista_de_parametros '>' tipo {
-      Table *body_table = stack_pop(get_tables_stack());
-      Table *table = stack_peek(get_tables_stack());
+      Table *table = get_tables_stack()->tail->previous->value;
+      if(table_has(table, $1.value))
+        return ERR_DECLARED;
       table_set_value(table, $1.value, FUNCTION, $6->label);
-      stack_push(get_tables_stack(), body_table);
 
       $$ = asd_new($1.value);
     }
@@ -147,7 +147,7 @@ lista_de_parametros:
 parametro:
     TK_IDENTIFICADOR '<' '-' tipo {
       Table *table = stack_peek(get_tables_stack());
-      table_set_value(table, $1.value, IDENTIFIER, $4->label);
+      table_set_value(table, $1.value, VARIABLE, $4->label);
       $$ = NULL;
     }
     | {
@@ -201,7 +201,7 @@ declaracao:
         if(table->elements[i] != NULL) {
           if(table->elements[i]->value.data_type != UNKNOWN)
             continue;
-          table_set_value(table, table->elements[i]->key, IDENTIFIER, $1->label);
+          table_set_value(table, table->elements[i]->key, VARIABLE, $1->label);
         }
       }
       $$ = $2;
@@ -221,11 +221,17 @@ lista_variavel:
 
 variavel:
     TK_IDENTIFICADOR {
-      table_set_value(stack_peek(get_tables_stack()), $1.value, IDENTIFIER, "");
+      Table *table = stack_peek(get_tables_stack());
+      if(table_has(table, $1.value))
+        return ERR_DECLARED;
+      table_set_value(table, $1.value, VARIABLE, "");
       $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
-      table_set_value(stack_peek(get_tables_stack()), $1.value, IDENTIFIER, "");
+      Table *table = stack_peek(get_tables_stack());
+      if(table_has(table, $1.value))
+        return ERR_DECLARED;
+      table_set_value(table, $1.value, VARIABLE, "");
       $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
@@ -240,6 +246,11 @@ atribuicao:
 
 chamada_funcao:
     TK_IDENTIFICADOR '(' lista_de_argumentos ')' {
+      TableEntry *entry = table_search(get_tables_stack(), $1.value);
+      if(entry == NULL)
+        return ERR_UNDECLARED;
+      if(entry->entry_type == VARIABLE)
+        return ERR_VARIABLE;
       char node_label[strlen($1.value) + 5];
       sprintf(node_label, "call %s", $1.value);
       $$ = asd_new(node_label);
@@ -399,7 +410,7 @@ unario:
     }
     | TK_IDENTIFICADOR {
       Table *table = stack_peek(get_tables_stack());
-      TableEntry *entry = table_get(table, $1.value);
+      TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL)
         return ERR_UNDECLARED;
       if(entry->entry_type == FUNCTION)
