@@ -174,7 +174,14 @@ lista_comandos_simples:
       if ($1 == NULL) {
         $$ = $3;
       } else {
-        asd_add_child($1, $3);
+        if(strcmp($1->label, "<=") == 0) {
+          asd_tree_t *last = $1;
+          while(last->number_of_children == 3)
+            last = last->children[last->number_of_children - 1];
+          asd_add_child(last, $3);
+        } else {
+          asd_add_child($1, $3);
+        }
       }
     }
     | comando ';' {
@@ -220,6 +227,7 @@ lista_variavel:
         $$ = $3;
       } else {
         asd_add_child($1, $3);
+        $$ = $1;
       }
     }
     | variavel {
