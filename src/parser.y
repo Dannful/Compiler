@@ -8,10 +8,15 @@ Vinicius Daniel Spadotto - 00341554
 %{
     #include <string.h>
     #include <stdio.h>
+    #include "../include/stack.h"
+    #include "../include/table.h"
+    #include "../include/errors.h"
     extern void *arvore;
     extern int get_line_number(void);
     int yylex(void);
     void yyerror (char const *mensagem);
+    Stack *tables_stack = NULL;
+    Stack *get_tables_stack();
 %}
 
 %code requires { #include "asd.h" }
@@ -79,7 +84,7 @@ programa:
       $$ = $1;
       arvore = $1;
     }
-    |  {
+    | {
       $$ = NULL;
     }
 
@@ -92,15 +97,28 @@ lista_de_funcoes:
     }
 
 funcao:
-    cabecalho_funcao bloco_comando {
+    cabecalho_funcao bloco_comando remover_tabela_corpo {
       asd_add_child($1, $2);
       $$ = $1;
     }
 
+remover_tabela_corpo: {
+  stack_pop(get_tables_stack());
+}
+
 cabecalho_funcao:
-    TK_IDENTIFICADOR '=' lista_de_parametros '>' tipo {
+    TK_IDENTIFICADOR '=' gerar_tabela_corpo lista_de_parametros '>' tipo {
+      Table *body_table = stack_pop(get_tables_stack());
+      Table *table = stack_peek(get_tables_stack());
+      table_set_value(table, $1.value, FUNCTION, $6->label);
+      stack_push(get_tables_stack(), body_table);
+
       $$ = asd_new($1.value);
     }
+
+gerar_tabela_corpo: {
+  stack_push(get_tables_stack(), table_create());
+}
 
 tipo:
     TK_PR_INT {
@@ -128,6 +146,8 @@ lista_de_parametros:
 
 parametro:
     TK_IDENTIFICADOR '<' '-' tipo {
+      Table *table = stack_peek(get_tables_stack());
+      table_set_value(table, $1.value, IDENTIFIER, $4->label);
       $$ = NULL;
     }
     | {
@@ -176,6 +196,14 @@ comando:
 
 declaracao:
     tipo lista_variavel {
+      Table *table = stack_peek(get_tables_stack());
+      for(int i = 0; i < table->size; i++) {
+        if(table->elements[i] != NULL) {
+          if(table->elements[i]->value.data_type != UNKNOWN)
+            continue;
+          table_set_value(table, table->elements[i]->key, IDENTIFIER, $1->label);
+        }
+      }
       $$ = $2;
     }
 
@@ -193,9 +221,11 @@ lista_variavel:
 
 variavel:
     TK_IDENTIFICADOR {
+      table_set_value(stack_peek(get_tables_stack()), $1.value, IDENTIFIER, "");
       $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
+      table_set_value(stack_peek(get_tables_stack()), $1.value, IDENTIFIER, "");
       $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
@@ -368,6 +398,12 @@ unario:
       $$ = $1;
     }
     | TK_IDENTIFICADOR {
+      Table *table = stack_peek(get_tables_stack());
+      TableEntry *entry = table_get(table, $1.value);
+      if(entry == NULL)
+        return ERR_UNDECLARED;
+      if(entry->entry_type == FUNCTION)
+        return ERR_FUNCTION;
       $$ = asd_new($1.value);
     }
     | chamada_funcao {
@@ -377,6 +413,14 @@ unario:
 %%
 void yyerror(char const *mensagem) {
     fprintf(stderr, "Line %i: %s\n", get_line_number(), mensagem);
+}
+
+Stack *get_tables_stack() {
+  if(tables_stack == NULL) {
+    tables_stack = create_stack();
+    stack_push(tables_stack, table_create());
+  }
+  return tables_stack;
 }
 
 void set_input_string(const char* in);
