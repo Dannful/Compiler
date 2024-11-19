@@ -13,7 +13,7 @@ OBJ_DIR = obj
 FLEX_FILE = $(SRC_DIR)/scanner.l
 BISON_FILE = $(SRC_DIR)/parser.y
 
-TARGET = etapa3
+TARGET = etapa4
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))

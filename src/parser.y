@@ -8,9 +8,9 @@ Vinicius Daniel Spadotto - 00341554
 %{
     #include <string.h>
     #include <stdio.h>
-    #include "../include/stack.h"
-    #include "../include/table.h"
-    #include "../include/errors.h"
+    #include "stack.h"
+    #include "table.h"
+    #include "errors.h"
     extern void *arvore;
     extern int get_line_number(void);
     int yylex(void);
