@@ -18,10 +18,11 @@ Vinicius Daniel Spadotto - 00341554
     Stack *tables_stack = NULL;
     Stack *get_tables_stack();
 
-    #define VARIABLE_ALREADY_DECLARED "Variável de nome \"%s\" já declarada na linha %d.\n"
-    #define UNDECLARED_IDENTIFIER "Identificador \"%s\" referido na linha %d não declarado.\n"
-    #define VARIABLE_AS_FUNCTION "Esperava-se um identificador de função na linha %d, mas \"%s\" refere-se a uma variável da linha %d.\n"
-    #define FUNCTION_AS_VARIABLE "Esperava-se um identificador de variável na linha %d, mas \"%s\" refere-se a uma função da linha %d.\n"
+    #define VARIABLE_ALREADY_DECLARED "ERROR: Variável de nome \"%s\" já declarada na linha %d.\n"
+    #define UNDECLARED_IDENTIFIER "ERROR: Identificador \"%s\" referido na linha %d não declarado.\n"
+    #define VARIABLE_AS_FUNCTION "ERROR: Esperava-se um identificador de função na linha %d, mas \"%s\" refere-se a uma variável da linha %d.\n"
+    #define FUNCTION_AS_VARIABLE "ERROR: Esperava-se um identificador de variável na linha %d, mas \"%s\" refere-se a uma função da linha %d.\n"
+    #define INCOMPATIBLE_TYPES "WARNING: a variável \"%s\" declarada na linha %d é do tipo \"%s\", enquanto que o valor atribuído é do tipo \"%s\".\n"
 %}
 
 %code requires { #include "asd.h" }
@@ -128,9 +129,11 @@ gerar_tabela_corpo: {
 tipo:
     TK_PR_INT {
       $$ = asd_new("int");
+      $$->data_type = INT;
     }
     | TK_PR_FLOAT {
       $$ = asd_new("float");
+      $$->data_type = FLOAT;
     }
 
 literal:
@@ -162,12 +165,20 @@ parametro:
     }
 
 bloco_comando:
-    '{' lista_comandos_simples '}' {
-      $$ = $2;
+    '{' gerar_escopo lista_comandos_simples destroi_escopo '}' {
+      $$ = $3;
     }
     | '{' '}' {
       $$ = NULL;
     }
+
+gerar_escopo: {
+  stack_push(get_tables_stack(), table_create());
+}
+
+destroi_escopo: {
+  stack_pop(get_tables_stack());
+}
 
 lista_comandos_simples:
     comando ';' lista_comandos_simples {
@@ -211,12 +222,14 @@ comando:
 declaracao:
     tipo lista_variavel {
       Table *table = stack_peek(get_tables_stack());
-      for(int i = 0; i < table->size; i++) {
-        if(table->elements[i] != NULL) {
-          if(table->elements[i]->value.data_type != UNKNOWN)
-            continue;
-          table_set_value(table, table->elements[i]->key, VARIABLE, $1->label);
+      asd_tree_t *root = $2;
+      while(root != NULL && root->number_of_children > 0) {
+        table_set_value(table, root->children[0]->label, VARIABLE, $1->label);
+        root->data_type = $1->data_type;
+        if(root->children[1]->data_type != root->data_type) {
+          printf(INCOMPATIBLE_TYPES, root->children[0]->label, get_line_number(), get_string_for_data_type(root->data_type), get_string_for_data_type(root->children[1]->data_type));
         }
+        root = root->children[root->number_of_children - 1];
       }
       $$ = $2;
     }
@@ -242,7 +255,6 @@ variavel:
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
       }
-      table_set_value(table, $1.value, VARIABLE, "");
       $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
@@ -252,7 +264,6 @@ variavel:
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
       }
-      table_set_value(table, $1.value, VARIABLE, "");
       $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
@@ -271,6 +282,10 @@ atribuicao:
       }
       $$ = asd_new("=");
       $$->data_type = entry->data_type;
+      if($$->data_type != $3->data_type) {
+        printf(INCOMPATIBLE_TYPES, $1.value, get_line_number(), get_string_for_data_type($$->data_type), get_string_for_data_type($3->data_type));
+      }
+
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);
     }
@@ -509,7 +524,6 @@ unario:
       $$ = $1;
     }
     | TK_IDENTIFICADOR {
-      Table *table = stack_peek(get_tables_stack());
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
         printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());

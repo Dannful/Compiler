@@ -19,6 +19,8 @@ typedef struct asd_tree {
   struct asd_tree **children;
 } asd_tree_t;
 
+const char *get_string_for_data_type(DataType data_type);
+
 /*
  * Função asd_new, cria um nó sem filhos com o label informado.
  */

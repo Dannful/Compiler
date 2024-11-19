@@ -14,6 +14,18 @@ no Moodle.
 #include <string.h>
 #define ARQUIVO_SAIDA "saida.dot"
 
+const char *get_string_for_data_type(DataType data_type) {
+  switch (data_type) {
+  case INT:
+    return "int";
+  case FLOAT:
+    return "float";
+  case UNKNOWN:
+    return "unknown";
+  }
+  return "unknown";
+}
+
 asd_tree_t *asd_new(const char *label) {
   asd_tree_t *ret = NULL;
   ret = calloc(1, sizeof(asd_tree_t));
