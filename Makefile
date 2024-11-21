@@ -5,7 +5,8 @@
 
 CC = gcc
 INCLUDES = obj include
-CFLAGS = -lfl -g $(foreach dir,$(INCLUDES),-I$(dir))
+CFLAGS = -lfl -g -Wall $(foreach dir,$(INCLUDES),-I$(dir))
+CFLAGS_LEXYY = -lfl -g $(foreach dir,$(INCLUDES),-I$(dir))
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -32,7 +33,7 @@ $(OBJ_DIR)/lex.yy.c: $(FLEX_FILE)
 	flex -o $@ $<
 
 $(OBJ_DIR)/lex.yy.o: $(OBJ_DIR)/lex.yy.c $(OBJ_DIR)/parser.tab.h
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS_LEXYY) -c $< -o $@
 
 $(OBJ_DIR)/parser.tab.c $(OBJ_DIR)/parser.tab.h: $(BISON_FILE)
 	@mkdir -p $(OBJ_DIR)

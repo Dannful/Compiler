@@ -60,7 +60,6 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child) {
 }
 
 static void _asd_print(FILE *foutput, asd_tree_t *tree) {
-  int i;
   if (tree != NULL) {
     fprintf(foutput, "%p [label=\"%s\"];\n", tree, tree->label);
     for (int child = 0; child < tree->number_of_children; child++)
