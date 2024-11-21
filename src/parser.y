@@ -223,6 +223,13 @@ declaracao:
     tipo lista_variavel {
       Table *table = stack_peek(get_tables_stack());
       asd_tree_t *root = $2;
+      for(int i = 0; i < table->size; i++) {
+        if(table->elements[i] != NULL) {
+          if(table->elements[i]->value.data_type != UNKNOWN)
+            continue;
+          table_set_value(table, table->elements[i]->key, VARIABLE, $1->label);
+        }
+      }
       while(root != NULL && root->number_of_children > 0) {
         table_set_value(table, root->children[0]->label, VARIABLE, $1->label);
         root->data_type = $1->data_type;
@@ -255,6 +262,7 @@ variavel:
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
       }
+      table_set_value(table, $1.value, VARIABLE, "");
       $$ = NULL;
     }
     | TK_IDENTIFICADOR TK_OC_LE literal {
@@ -264,6 +272,7 @@ variavel:
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
         return ERR_DECLARED;
       }
+      table_set_value(table, $1.value, VARIABLE, "");
       $$ = asd_new("<=");
       asd_add_child($$, asd_new($1.value));
       asd_add_child($$, $3);

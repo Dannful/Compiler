@@ -7,7 +7,7 @@ Vinicius Daniel Spadotto - 00341554
 Arquivo obtido e alterado a partir dos arquivos disponibilizados pelo professor
 no Moodle.
 */
-#include "../include/asd.h"
+#include "asd.h"
 
 #include <stdio.h>
 #include <stdlib.h>

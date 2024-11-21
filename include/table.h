@@ -1,3 +1,9 @@
+/*
+Grupo C
+Alunos:
+Gustavo Sleman Lenz - 00290394
+Vinicius Daniel Spadotto - 00341554
+*/
 #ifndef TABLE_H
 #define TABLE_H
 #include "asd.h"

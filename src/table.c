@@ -1,4 +1,10 @@
-#include "../include/table.h"
+/*
+Grupo C
+Alunos:
+Gustavo Sleman Lenz - 00290394
+Vinicius Daniel Spadotto - 00341554
+*/
+#include "table.h"
 #include <stdlib.h>
 #include <string.h>
 
