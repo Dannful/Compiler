@@ -520,13 +520,16 @@ fator:
 unario:
     '(' expressao ')' {
       $$ = $2;
+      $$->data_type = $2->data_type;
     }
     | '!' unario {
       $$ = asd_new("!");
+      $$->data_type = $2->data_type;
       asd_add_child($$, $2);
     }
     | '-' unario {
       $$ = asd_new("-");
+      $$->data_type = $2->data_type;
       asd_add_child($$, $2);
     }
     | literal {
