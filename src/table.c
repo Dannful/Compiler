@@ -10,6 +10,7 @@ Vinicius Daniel Spadotto - 00341554
 
 #define SIZE 1024
 
+/* Source: http://www.cse.yorku.ca/~oz/hash.html */
 size_t hash(const char *key, size_t size) {
   unsigned long hash = 5381;
   int c;

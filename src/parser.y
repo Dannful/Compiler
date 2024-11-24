@@ -103,17 +103,16 @@ lista_de_funcoes:
     }
 
 funcao:
-    cabecalho_funcao bloco_comando remover_tabela_corpo {
-      asd_add_child($1, $2);
+    cabecalho_funcao '{' lista_comandos_simples '}' destroi_escopo {
+      asd_add_child($1, $3);
+      $$ = $1;
+    } |
+    cabecalho_funcao '{' '}' destroi_escopo {
       $$ = $1;
     }
 
-remover_tabela_corpo: {
-  stack_pop(get_tables_stack());
-}
-
 cabecalho_funcao:
-    TK_IDENTIFICADOR '=' gerar_tabela_corpo lista_de_parametros '>' tipo {
+    TK_IDENTIFICADOR '=' gerar_escopo lista_de_parametros '>' tipo {
       Table *table = get_tables_stack()->tail->previous->value;
       if(table_has(table, $1.value))
         return ERR_DECLARED;
@@ -121,10 +120,6 @@ cabecalho_funcao:
 
       $$ = asd_new($1.value);
     }
-
-gerar_tabela_corpo: {
-  stack_push(get_tables_stack(), table_create());
-}
 
 tipo:
     TK_PR_INT {
@@ -546,6 +541,7 @@ unario:
         return ERR_FUNCTION;
       }
       $$ = asd_new($1.value);
+      $$->data_type = entry->data_type;
     }
     | chamada_funcao {
       $$ = $1;

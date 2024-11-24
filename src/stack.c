@@ -45,7 +45,7 @@ Table *stack_pop(Stack *stack) {
   }
   StackNode *node = stack->head;
   while (node->next != stack->tail)
-    ;
+    node = node->next;
   Table *result = node->next->value;
   free(node->next);
   node->next = NULL;
