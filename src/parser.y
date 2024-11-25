@@ -127,11 +127,9 @@ cabecalho_funcao:
 tipo:
     TK_PR_INT {
       $$ = asd_new("int");
-      $$->data_type = INT;
     }
     | TK_PR_FLOAT {
       $$ = asd_new("float");
-      $$->data_type = FLOAT;
     }
 
 literal:
@@ -229,8 +227,9 @@ declaracao:
         }
       }
       while(root != NULL && root->number_of_children > 0) {
+        TableEntry *foundValue = table_get(table, root->children[0]->label);
         table_set_value(table, root->children[0]->label, VARIABLE, $1->label);
-        root->data_type = $1->data_type;
+        root->data_type = foundValue->data_type;
         if(root->children[1]->data_type != root->data_type) {
           printf(INCOMPATIBLE_TYPES, root->children[0]->label, get_line_number(), get_string_for_data_type(root->data_type), get_string_for_data_type(root->children[1]->data_type));
         }
