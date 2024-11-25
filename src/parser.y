@@ -11,6 +11,7 @@ Vinicius Daniel Spadotto - 00341554
     #include "stack.h"
     #include "table.h"
     #include "errors.h"
+    #include <stdlib.h>
     extern void *arvore;
     extern int get_line_number(void);
     int yylex(void);
@@ -114,8 +115,10 @@ funcao:
 cabecalho_funcao:
     TK_IDENTIFICADOR '=' gerar_escopo lista_de_parametros '>' tipo {
       Table *table = get_tables_stack()->tail->previous->value;
-      if(table_has(table, $1.value))
+      if(table_has(table, $1.value)) {
+        exit(ERR_DECLARED);
         return ERR_DECLARED;
+      }
       table_set_value(table, $1.value, FUNCTION, $6->label);
 
       $$ = asd_new($1.value);
@@ -255,6 +258,7 @@ variavel:
       TableEntry *foundValue = table_get(table, $1.value);
       if(foundValue != NULL) {
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
+        exit(ERR_DECLARED);
         return ERR_DECLARED;
       }
       table_set_value(table, $1.value, VARIABLE, "");
@@ -265,6 +269,7 @@ variavel:
       TableEntry *foundValue = table_get(table, $1.value);
       if(foundValue != NULL) {
         printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
+        exit(ERR_DECLARED);
         return ERR_DECLARED;
       }
       table_set_value(table, $1.value, VARIABLE, "");
@@ -278,10 +283,12 @@ atribuicao:
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
         printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        exit(ERR_UNDECLARED);
         return ERR_UNDECLARED;
       }
       if(entry->entry_type == FUNCTION) {
         printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
+        exit(ERR_FUNCTION);
         return ERR_FUNCTION;
       }
       $$ = asd_new("=");
@@ -299,10 +306,12 @@ chamada_funcao:
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
         printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        exit(ERR_UNDECLARED);
         return ERR_UNDECLARED;
       }
       if(entry->entry_type == VARIABLE) {
         printf(VARIABLE_AS_FUNCTION, get_line_number(), $1.value, entry->line);
+        exit(ERR_VARIABLE);
         return ERR_VARIABLE;
       }
       char node_label[strlen($1.value) + 5];
@@ -534,10 +543,12 @@ unario:
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
         printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        exit(ERR_UNDECLARED);
         return ERR_UNDECLARED;
       }
       if(entry->entry_type == FUNCTION) {
         printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
+        exit(ERR_FUNCTION);
         return ERR_FUNCTION;
       }
       $$ = asd_new($1.value);
