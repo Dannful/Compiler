@@ -317,6 +317,7 @@ chamada_funcao:
       char node_label[strlen($1.value) + 5];
       sprintf(node_label, "call %s", $1.value);
       $$ = asd_new(node_label);
+      $$->data_type = entry->data_type;
       asd_add_child($$, $3);
     }
 
