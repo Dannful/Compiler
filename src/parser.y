@@ -19,10 +19,11 @@ Vinicius Daniel Spadotto - 00341554
     Stack *tables_stack = NULL;
     Stack *get_tables_stack();
 
-    #define VARIABLE_ALREADY_DECLARED "ERROR: Variável de nome \"%s\" já declarada na linha %d.\n"
-    #define UNDECLARED_IDENTIFIER "ERROR: Identificador \"%s\" referido na linha %d não declarado.\n"
-    #define VARIABLE_AS_FUNCTION "ERROR: Esperava-se um identificador de função na linha %d, mas \"%s\" refere-se a uma variável da linha %d.\n"
-    #define FUNCTION_AS_VARIABLE "ERROR: Esperava-se um identificador de variável na linha %d, mas \"%s\" refere-se a uma função da linha %d.\n"
+    #define VARIABLE_ALREADY_DECLARED "ERROR - Linha %d: Variável de nome \"%s\" já declarada na linha %d.\n"
+    #define FUNCTION_ALREADY_DECLARED "ERROR - Linha %d: Função de nome \"%s\" já declarada na linha %d.\n"
+    #define UNDECLARED_IDENTIFIER "ERROR - Linha %d: Identificador \"%s\" referido na linha %d não declarado.\n"
+    #define VARIABLE_AS_FUNCTION "ERROR - Linha %d: Esperava-se um identificador de função na linha %d, mas \"%s\" refere-se a uma variável da linha %d.\n"
+    #define FUNCTION_AS_VARIABLE "ERROR - Linha %d: Esperava-se um identificador de variável na linha %d, mas \"%s\" refere-se a uma função da linha %d.\n"
     #define INCOMPATIBLE_TYPES "WARNING: a variável \"%s\" declarada na linha %d é do tipo \"%s\", enquanto que o valor atribuído é do tipo \"%s\".\n"
 %}
 
@@ -115,9 +116,10 @@ funcao:
 cabecalho_funcao:
     TK_IDENTIFICADOR '=' gerar_escopo lista_de_parametros '>' tipo {
       Table *table = get_tables_stack()->tail->previous->value;
-      if(table_has(table, $1.value)) {
+      TableEntry *foundValue = table_get(table, $1.value);
+      if(foundValue != NULL) {
+        printf(FUNCTION_ALREADY_DECLARED, get_line_number(), $1.value, foundValue->line);
         exit(ERR_DECLARED);
-        return ERR_DECLARED;
       }
       table_set_value(table, $1.value, FUNCTION, $6->label);
 
@@ -256,9 +258,8 @@ variavel:
       Table *table = stack_peek(get_tables_stack());
       TableEntry *foundValue = table_get(table, $1.value);
       if(foundValue != NULL) {
-        printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
+        printf(VARIABLE_ALREADY_DECLARED, get_line_number(), $1.value, foundValue->line);
         exit(ERR_DECLARED);
-        return ERR_DECLARED;
       }
       table_set_value(table, $1.value, VARIABLE, "");
       $$ = NULL;
@@ -267,9 +268,8 @@ variavel:
       Table *table = stack_peek(get_tables_stack());
       TableEntry *foundValue = table_get(table, $1.value);
       if(foundValue != NULL) {
-        printf(VARIABLE_ALREADY_DECLARED, $1.value, foundValue->line);
+        printf(VARIABLE_ALREADY_DECLARED, get_line_number(), $1.value, foundValue->line);
         exit(ERR_DECLARED);
-        return ERR_DECLARED;
       }
       table_set_value(table, $1.value, VARIABLE, "");
       $$ = asd_new("<=");
@@ -281,14 +281,12 @@ atribuicao:
     TK_IDENTIFICADOR '=' expressao {
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
-        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        printf(UNDECLARED_IDENTIFIER, get_line_number(), $1.value, get_line_number());
         exit(ERR_UNDECLARED);
-        return ERR_UNDECLARED;
       }
       if(entry->entry_type == FUNCTION) {
-        printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
+        printf(FUNCTION_AS_VARIABLE, get_line_number(), get_line_number(), $1.value, entry->line);
         exit(ERR_FUNCTION);
-        return ERR_FUNCTION;
       }
       $$ = asd_new("=");
       $$->data_type = entry->data_type;
@@ -304,14 +302,12 @@ chamada_funcao:
     TK_IDENTIFICADOR '(' lista_de_argumentos ')' {
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
-        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        printf(UNDECLARED_IDENTIFIER, get_line_number(), $1.value, get_line_number());
         exit(ERR_UNDECLARED);
-        return ERR_UNDECLARED;
       }
       if(entry->entry_type == VARIABLE) {
-        printf(VARIABLE_AS_FUNCTION, get_line_number(), $1.value, entry->line);
+        printf(VARIABLE_AS_FUNCTION, get_line_number(), get_line_number(), $1.value, entry->line);
         exit(ERR_VARIABLE);
-        return ERR_VARIABLE;
       }
       char node_label[strlen($1.value) + 5];
       sprintf(node_label, "call %s", $1.value);
@@ -542,14 +538,12 @@ unario:
     | TK_IDENTIFICADOR {
       TableEntry *entry = table_search(get_tables_stack(), $1.value);
       if(entry == NULL) {
-        printf(UNDECLARED_IDENTIFIER, $1.value, get_line_number());
+        printf(UNDECLARED_IDENTIFIER, get_line_number(), $1.value, get_line_number());
         exit(ERR_UNDECLARED);
-        return ERR_UNDECLARED;
       }
       if(entry->entry_type == FUNCTION) {
-        printf(FUNCTION_AS_VARIABLE, get_line_number(), $1.value, entry->line);
+        printf(FUNCTION_AS_VARIABLE, get_line_number(), get_line_number(), $1.value, entry->line);
         exit(ERR_FUNCTION);
-        return ERR_FUNCTION;
       }
       $$ = asd_new($1.value);
       $$->data_type = entry->data_type;
