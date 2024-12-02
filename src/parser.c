@@ -1,8 +1,25 @@
 #include "parser.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "asd.h"
 #include "errors.h"
+#include "stack.h"
 #include "table.h"
+
+Stack* g_tables_stack = NULL;
+
+extern void* arvore;
+extern int get_line_number();
+
+Stack* get_tables_stack() {
+    if (g_tables_stack == NULL) {
+        g_tables_stack = create_stack();
+        stack_push(g_tables_stack, table_create());
+    }
+    return g_tables_stack;
+}
 
 // Used in many generations
 void parse_simple(asd_tree_t* head, asd_tree_t* body) { head = body; }
@@ -133,4 +150,93 @@ void parse_variable_literal(asd_tree_t* head, lex_value_t* identifier, asd_tree_
     head = asd_new("<=");
     asd_add_child(head, asd_new(identifier->value));
     asd_add_child(head, literal);
+}
+
+void parse_variable_list(asd_tree_t* head, asd_tree_t* variable, asd_tree_t* variable_list) {
+    if (variable == NULL) {
+        head = variable_list;
+    } else {
+        asd_add_child(variable, variable_list);
+        head = variable;
+    }
+}
+
+void parse_declaration(asd_tree_t* head, asd_tree_t* type, asd_tree_t* variable_list) {
+    Table* table = stack_peek(get_tables_stack());
+    asd_tree_t* root = variable_list;
+    for (int i = 0; i < table->size; i++) {
+        if (table->elements[i] != NULL) {
+            if (table->elements[i]->value.data_type != UNKNOWN) {
+                continue;
+            }
+            table_set_value(table, table->elements[i]->key, VARIABLE, type->label);
+        }
+    }
+    while (root != NULL && root->number_of_children > 0) {
+        TableEntry* foundValue = table_get(table, root->children[0]->label);
+        table_set_value(table, root->children[0]->label, VARIABLE, type->label);
+        root->data_type = foundValue->data_type;
+        if (root->children[1]->data_type != root->data_type) {
+            printf(INCOMPATIBLE_TYPES, root->children[0]->label, get_line_number(),
+                   get_string_for_data_type(root->data_type), get_string_for_data_type(root->children[1]->data_type));
+        }
+        root = root->children[root->number_of_children - 1];
+    }
+    head = variable_list;
+}
+
+void parse_simple_command_list(asd_tree_t* head, asd_tree_t* command, asd_tree_t* command_list) {
+    if (command == NULL) {
+        head = command_list;
+    } else {
+        if (strcmp(command->label, "<=") == 0) {
+            asd_tree_t* last = command;
+            while (last->number_of_children == 3) last = last->children[last->number_of_children - 1];
+            asd_add_child(last, command_list);
+        } else {
+            asd_add_child(command, command_list);
+        }
+    }
+}
+
+void parse_parameter(asd_tree_t* head, lex_value_t* identifier, asd_tree_t* type) {
+    Table* table = stack_peek(get_tables_stack());
+    TableEntry* value = table_get(table, identifier->value);
+    if (value != NULL) {
+        printf(VARIABLE_ALREADY_DECLARED, get_line_number(), identifier->value, value->line);
+        exit(ERR_DECLARED);
+    }
+    table_set_value(table, identifier->value, VARIABLE, type->label);
+    head = NULL;
+}
+
+void parse_literal(asd_tree_t* head, lex_value_t* literal, DataType data_type) {
+    head = asd_new(strdup(literal->value));
+    head->data_type = data_type;
+}
+
+void parse_type(asd_tree_t* head, const char* type_name) { head = asd_new(type_name); }
+
+void parse_function_header(asd_tree_t* head, lex_value_t* identifier, asd_tree_t* type) {
+    Table* table = get_tables_stack()->tail->previous->value;
+    TableEntry* found_value = table_get(table, identifier->value);
+    if (found_value != NULL) {
+        printf(FUNCTION_ALREADY_DECLARED, get_line_number(), identifier->value, found_value->line);
+        exit(ERR_DECLARED);
+    }
+    table_set_value(table, identifier->value, FUNCTION, type->label);
+
+    head = asd_new(identifier->value);
+}
+
+void parse_function(asd_tree_t* head, asd_tree_t* header, asd_tree_t* command_list) {
+    asd_add_child(header, command_list);
+    head = command_list;
+}
+
+void parse_list(asd_tree_t* hd, asd_tree_t* tl) { asd_add_child(hd, tl); }
+
+void parse_program(asd_tree_t* head, asd_tree_t* function_list) {
+    head = function_list;
+    arvore = function_list;
 }
