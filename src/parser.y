@@ -34,7 +34,7 @@ Vinicius Daniel Spadotto - 00341554
     unsigned int line_number;
     char token_type;
     char *value;
-  } lex_value;
+  } *lex_value;
   asd_tree_t *tree;
 }
 

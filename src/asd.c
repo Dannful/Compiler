@@ -61,7 +61,7 @@ void asd_add_child(asd_tree_t *tree, asd_tree_t *child) {
 
 static void _asd_print(FILE *foutput, asd_tree_t *tree) {
   if (tree != NULL) {
-    fprintf(foutput, "%p [label=\"%s\"];\n", tree, tree->label);
+    fprintf(foutput, "%p [label=\"%s (%s)\"];\n", tree, tree->label, get_string_for_data_type(tree->data_type));
     for (int child = 0; child < tree->number_of_children; child++)
       fprintf(foutput, "%p, %p\n", tree, tree->children[child]);
     for (int child = 0; child < tree->number_of_children; child++)
@@ -82,7 +82,7 @@ static void _asd_print_graphviz(FILE *foutput, asd_tree_t *tree) {
   if (tree == NULL)
     return;
   int i;
-  fprintf(foutput, "  %ld [ label=\"%s\" ];\n", (long)tree, tree->label);
+  fprintf(foutput, "  %ld [ label=\"%s (%s)\" ];\n", (long)tree, tree->label, get_string_for_data_type(tree->data_type));
   for (i = 0; i < tree->number_of_children; i++) {
     fprintf(foutput, "  %ld -> %ld;\n", (long)tree, (long)tree->children[i]);
     _asd_print_graphviz(foutput, tree->children[i]);
