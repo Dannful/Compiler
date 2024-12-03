@@ -312,7 +312,7 @@ unario:
       parse_unary_parenthesis(&$$, $2);
     }
     | '!' unario {
-      parse_unary_operator(&$$, "|", $2);
+      parse_unary_operator(&$$, "!", $2);
     }
     | '-' unario {
       parse_unary_operator(&$$, "-", $2);

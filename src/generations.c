@@ -38,6 +38,7 @@ void parse_unary_parenthesis(asd_tree_t** head, asd_tree_t* expression) {
 void parse_unary_operator(asd_tree_t** head, const char* op, asd_tree_t* operand) {
     *head = asd_new(op);
     (*head)->data_type = operand->data_type;
+    asd_add_child(*head, operand);
 }
 
 void parse_unary_identifier(asd_tree_t** head, lex_value_t* identifier) {
