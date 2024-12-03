@@ -5,3 +5,8 @@ UseTab: Never
 ColumnLimit: 120
 DerivePointerAlignment: false
 PointerAlignment: Right
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
