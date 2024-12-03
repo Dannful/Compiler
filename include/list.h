@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include "iloc.h"
 
-typedef struct node {
+typedef struct list_node {
   iloc_instruction_t instruction;
-  struct node *next;
+  struct list_node *next;
 } ListNode;
 
 typedef struct {

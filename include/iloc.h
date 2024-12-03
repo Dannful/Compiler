@@ -2,15 +2,20 @@
 
 #include <stdint.h>
 
+typedef enum {
+  FRAME_POINTER = 0,
+  GENERAL = 1
+} iloc_register_type_t;
+
 typedef struct {
-  uint8_t register;
-  int operand;
-} iloc_register_operand_t;
+  iloc_register_type_t type;
+  uint8_t identifier;
+  uint32_t operand;
+} iloc_register_t;
 
 typedef union {
-  uint8_t source_registers[2];
-  uint8_t source_register;
-  iloc_register_operand_t register_operand;
+  iloc_register_t sources[2];
+  iloc_register_t source;
 } iloc_instruction_data_t;
 
 typedef enum {
@@ -22,7 +27,7 @@ typedef enum {
 
 typedef struct {
   const char *mnemonic;
-  iloc_instruction_type type;
+  iloc_instruction_type_t type;
   iloc_instruction_data_t data;
-  uint8_t destination_register;
+  iloc_register_t destination;
 } iloc_instruction_t;

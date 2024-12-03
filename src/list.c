@@ -12,7 +12,7 @@ List *create_list() {
 void list_add(List *list, iloc_instruction_t instruction) {
   ListNode *head = list->head;
   ListNode *new_node = malloc(sizeof(ListNode));
-  new_node->value = instruction;
+  new_node->instruction = instruction;
   new_node->next = NULL;
   if (head == NULL) {
     list->head = new_node;
@@ -28,17 +28,17 @@ void list_add(List *list, iloc_instruction_t instruction) {
 void list_append(List *destination, List *source) {
   ListNode *head = source->head;
   while(head != NULL)
-    list_add(destination, head->value);
+    list_add(destination, head->instruction);
 }
 
-void _node_free(ListNode *node) {
+void _list_node_free(ListNode *node) {
   if (node == NULL)
     return;
-  _node_free(node->next);
+  _list_node_free(node->next);
   free(node);
 }
 
 void list_destroy(List *list) {
-  _node_free(list->head);
+  _list_node_free(list->head);
   free(list);
 }

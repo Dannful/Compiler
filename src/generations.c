@@ -143,10 +143,17 @@ void parse_assignment(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *ex
     iloc_instruction_t instruction;
     instruction.mnemonic = "storeAI";
     instruction.type = REGISTER_DEST_OPERAND;
-    instruction.data.register_operand.register = expression->local;
-    instruction.data.register_operand.operand = entry->offset;
+
+    instruction.data.source.type = GENERAL;
+    instruction.data.source.identifier = expression->local;
+
+    instruction.destination.type = FRAME_POINTER;
+    instruction.destination.operand = entry->offset;
+
     asd_add_child(*head, asd_new(identifier->value));
     asd_add_child(*head, expression);
+    (*head)->code = expression->code;
+    list_add((*head)->code, instruction);
     free(identifier);
 }
 
