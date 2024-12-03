@@ -235,7 +235,7 @@ void parse_function_header(asd_tree_t** head, lex_value_t* identifier, asd_tree_
 
 void parse_function(asd_tree_t** head, asd_tree_t* header, asd_tree_t* command_list) {
     asd_add_child(header, command_list);
-    *head = command_list;
+    *head = header;
 }
 
 void parse_list(asd_tree_t* hd, asd_tree_t* tl) { asd_add_child(hd, tl); }
