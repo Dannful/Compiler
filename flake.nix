@@ -9,11 +9,11 @@
 
   outputs = { nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-
-        devShell = pkgs.mkShell {
-          buildInputs = [ pkgs.gcc pkgs.gnumake pkgs.bison pkgs.flex ];
+      let pkgs = import nixpkgs { inherit system; };
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs =
+            [ pkgs.gcc pkgs.gnumake pkgs.bison pkgs.flex pkgs.clang ];
         };
-      in { devShell = devShell; });
+      });
 }

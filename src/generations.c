@@ -15,9 +15,9 @@ Vinicius Daniel Spadotto - 00341554
 #include "stack.h"
 #include "table.h"
 
-Stack* g_tables_stack = NULL;
-uint8_t last_register_number = 0;
-uint8_t last_label_number = 0;
+Stack *g_tables_stack = NULL;
+register_identifier_t last_register_number = 0;
+label_identifier_t last_label_number = 0;
 
 extern void *arvore;
 extern int get_line_number();
@@ -31,12 +31,24 @@ Stack *get_tables_stack() {
 }
 
 // Used in many generations
-void parse_simple(asd_tree_t **head, asd_tree_t *body) { *head = body; }
-void parse_null(asd_tree_t **head) { *head = NULL; }
+void parse_simple(asd_tree_t **head, asd_tree_t *body) {
+    *head = body;
+}
+void parse_null(asd_tree_t **head) {
+    *head = NULL;
+}
 
-void parse_generate_scope() { stack_push(get_tables_stack(), table_create()); }
+void parse_generate_scope() {
+  Table *new_table = table_create();
+  Stack *stack = get_tables_stack();
+  if(stack->count >= 2)
+    new_table->offset = stack->tail->value->offset;
+  stack_push(stack, new_table);
+}
 
-void parse_destroy_scope() { stack_pop(get_tables_stack()); }
+void parse_destroy_scope() {
+    stack_pop(get_tables_stack());
+}
 
 // Unary operators
 void parse_unary_parenthesis(asd_tree_t **head, asd_tree_t *expression) {
@@ -44,9 +56,61 @@ void parse_unary_parenthesis(asd_tree_t **head, asd_tree_t *expression) {
     (*head)->data_type = expression->data_type;
 }
 
+void handle_not_instruction(asd_tree_t **head, const char *op, asd_tree_t *operand) {
+  if(strcmp(op, "!") != 0)
+    return;
+  register_identifier_t reg_with_zero = generate_register();
+  register_identifier_t reg_with_result = generate_register();
+  iloc_instruction_t load_zero_into_reg;
+  load_zero_into_reg.mnemonic = "loadI";
+  load_zero_into_reg.type = OPERAND_DEST;
+  load_zero_into_reg.data.operand = 0;
+  load_zero_into_reg.destination.type = GENERAL;
+  load_zero_into_reg.destination.identifier = reg_with_zero;
+
+  iloc_instruction_t not_instruction;
+  not_instruction.mnemonic = "cmp_EQ";
+  not_instruction.type = REGISTER_REGISTER_DEST;
+  not_instruction.data.sources[0].type = GENERAL;
+  not_instruction.data.sources[1].type = GENERAL;
+
+  not_instruction.data.sources[0].operand = operand->local;
+  not_instruction.data.sources[1].operand = reg_with_zero;
+
+  not_instruction.destination.type = GENERAL;
+  not_instruction.destination.identifier = reg_with_result;
+
+  (*head)->code = operand->code;
+  list_add((*head)->code, load_zero_into_reg);
+  list_add((*head)->code, not_instruction);
+  (*head)->local = reg_with_result;
+}
+
+void handle_minus_instruction(asd_tree_t **head, const char *op, asd_tree_t *operand) {
+  if(strcmp(op, "-") != 0)
+    return;
+  register_identifier_t reg_with_result = generate_register();
+
+  iloc_instruction_t minus_instruction;
+  minus_instruction.mnemonic = "multI";
+  minus_instruction.type = REGISTER_OPERAND_DEST;
+  minus_instruction.data.source.type = GENERAL;
+  minus_instruction.data.source.identifier = operand->local;
+  minus_instruction.data.source.operand = -1;
+
+  minus_instruction.destination.type = GENERAL;
+  minus_instruction.destination.identifier = reg_with_result;
+
+  (*head)->code = operand->code;
+  list_add((*head)->code, minus_instruction);
+  (*head)->local = reg_with_result;
+}
+
 void parse_unary_operator(asd_tree_t **head, const char *op, asd_tree_t *operand) {
     *head = asd_new(op);
     (*head)->data_type = operand->data_type;
+    handle_not_instruction(head, op, operand);
+    handle_minus_instruction(head, op, operand);
     asd_add_child(*head, operand);
 }
 
@@ -65,6 +129,55 @@ void parse_unary_identifier(asd_tree_t **head, lex_value_t *identifier) {
     free(identifier);
 }
 
+const char *get_mnemonic_for_binary_operation(const char *op) {
+  if(strcmp(op, "+"))
+    return "add";
+  if(strcmp(op, "-"))
+    return "sub";
+  if(strcmp(op, "/"))
+    return "div";
+  if(strcmp(op, "*"))
+    return "mult";
+  if(strcmp(op, "|"))
+    return "or";
+  if(strcmp(op, "&"))
+    return "and";
+  if(strcmp(op, "!="))
+    return "cmp_NE";
+  if(strcmp(op, "=="))
+    return "cmp_EQ";
+  if(strcmp(op, ">="))
+    return "cmp_GE";
+  if(strcmp(op, "<="))
+    return "cmp_LE";
+  if(strcmp(op, ">"))
+    return "cmp_GT";
+  if(strcmp(op, "<"))
+    return "cmp_LT";
+  return "nop";
+}
+
+void handle_binary_operation_code(asd_tree_t **head, const char *op, asd_tree_t *operand1, asd_tree_t *operand2) {
+  register_identifier_t result_register = generate_register();
+  iloc_instruction_t instruction;
+  instruction.mnemonic = get_mnemonic_for_binary_operation(op);
+  instruction.type = REGISTER_REGISTER_DEST;
+
+  instruction.data.sources[0].type = GENERAL;
+  instruction.data.sources[0].identifier = operand1->local;
+
+  instruction.data.sources[1].type = GENERAL;
+  instruction.data.sources[1].identifier = operand2->local;
+
+  instruction.destination.type = GENERAL;
+  instruction.destination.identifier = result_register;
+
+  (*head)->local = result_register;
+  (*head)->code = operand1->code;
+  list_append((*head)->code, operand2->code);
+  list_add((*head)->code, instruction);
+}
+
 void parse_binary_operator(asd_tree_t **head, const char *op, asd_tree_t *operand1, asd_tree_t *operand2) {
     *head = asd_new(op);
     if (operand1->data_type == FLOAT || operand2->data_type == FLOAT) {
@@ -72,6 +185,7 @@ void parse_binary_operator(asd_tree_t **head, const char *op, asd_tree_t *operan
     } else {
         (*head)->data_type = INT;
     }
+
     asd_add_child(*head, operand1);
     asd_add_child(*head, operand2);
 }
@@ -222,7 +336,8 @@ void parse_simple_command_list(asd_tree_t **head, asd_tree_t *command, asd_tree_
     } else {
         if (strcmp(command->label, "<=") == 0) {
             asd_tree_t *last = command;
-            while (last->number_of_children == 3) last = last->children[last->number_of_children - 1];
+            while (last->number_of_children == 3)
+                last = last->children[last->number_of_children - 1];
             asd_add_child(last, command_list);
         } else {
             asd_add_child(command, command_list);
@@ -243,12 +358,25 @@ void parse_parameter(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *typ
 }
 
 void parse_literal(asd_tree_t **head, lex_value_t *literal, DataType data_type) {
+    register_identifier_t register_identifier = generate_register();
+    iloc_instruction_t instruction;
+    instruction.mnemonic = "loadI";
+    instruction.type = OPERAND_DEST;
+    instruction.data.operand = atoi(literal->value);
+    instruction.destination.type = GENERAL;
+    instruction.destination.identifier = register_identifier;
+
     *head = asd_new(strdup(literal->value));
     (*head)->data_type = data_type;
+    (*head)->code = create_list();
+    list_add((*head)->code, instruction);
+    (*head)->local = register_identifier;
     free(literal);
 }
 
-void parse_type(asd_tree_t **head, const char *type_name) { *head = asd_new(type_name); }
+void parse_type(asd_tree_t **head, const char *type_name) {
+    *head = asd_new(type_name);
+}
 
 void parse_function_header(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *type) {
     Table *table = get_tables_stack()->tail->previous->value;
@@ -267,17 +395,19 @@ void parse_function(asd_tree_t **head, asd_tree_t *header, asd_tree_t *command_l
     *head = header;
 }
 
-void parse_list(asd_tree_t *hd, asd_tree_t *tl) { asd_add_child(hd, tl); }
+void parse_list(asd_tree_t *hd, asd_tree_t *tl) {
+    asd_add_child(hd, tl);
+}
 
 void parse_program(asd_tree_t **head, asd_tree_t *function_list) {
     *head = function_list;
     arvore = function_list;
 }
 
-uint8_t generate_register() {
+register_identifier_t generate_register() {
     return last_register_number++;
 }
 
-uint8_t generate_label() {
+label_identifier_t generate_label() {
     return last_label_number++;
 }

@@ -7,6 +7,7 @@ Vinicius Daniel Spadotto - 00341554
 
 #pragma once
 
+#include "iloc.h"
 #define VARIABLE_ALREADY_DECLARED "ERROR - Linha %d: Variável de nome \"%s\" já declarada na linha %d.\n"
 #define FUNCTION_ALREADY_DECLARED "ERROR - Linha %d: Função de nome \"%s\" já declarada na linha %d.\n"
 #define UNDECLARED_IDENTIFIER "ERROR - Linha %d: Identificador \"%s\" referido na linha %d não declarado.\n"
@@ -67,8 +68,8 @@ extern void *arvore;
 extern int get_line_number();
 
 // Labels and registers generation
-uint8_t generate_register();
-uint8_t generate_label();
+register_identifier_t generate_register();
+label_identifier_t generate_label();
 
 // Global variable declaration
 extern Stack *g_tables_stack;
