@@ -1,3 +1,10 @@
+/*
+Grupo C
+Alunos:
+Gustavo Sleman Lenz - 00290394
+Vinicius Daniel Spadotto - 00341554
+*/
+
 #pragma once
 
 #define VARIABLE_ALREADY_DECLARED "ERROR - Linha %d: Variável de nome \"%s\" já declarada na linha %d.\n"
