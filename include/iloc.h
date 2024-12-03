@@ -24,4 +24,5 @@ typedef struct {
   const char *mnemonic;
   iloc_instruction_type type;
   iloc_instruction_data_t data;
+  uint8_t destination_register;
 } iloc_instruction_t;

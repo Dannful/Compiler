@@ -17,6 +17,7 @@ typedef struct {
   unsigned int line;
   EntryType entry_type;
   DataType data_type;
+  uint32_t offset;
 } TableEntry;
 
 typedef struct bucket {
@@ -30,6 +31,7 @@ typedef struct {
   size_t count;
   size_t size;
   sem_t semaphore;
+  uint32_t offset;
 } Table;
 
 Table *table_create(void);

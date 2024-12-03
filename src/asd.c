@@ -34,6 +34,7 @@ asd_tree_t *asd_new(const char *label) {
     ret->number_of_children = 0;
     ret->children = NULL;
     ret->data_type = UNKNOWN;
+    ret->code = create_list();
   }
   return ret;
 }

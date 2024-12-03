@@ -23,6 +23,8 @@ Vinicius Daniel Spadotto - 00341554
 #include "asd.h"
 #include "stack.h"
 
+#include <stdint.h>
+
 typedef struct lex_value {
     unsigned int line_number;
     char token_type;
@@ -63,6 +65,10 @@ void parse_destroy_scope();
 // External declarations
 extern void *arvore;
 extern int get_line_number();
+
+// Labels and registers generation
+uint8_t generate_register();
+uint8_t generate_label();
 
 // Global variable declaration
 extern Stack *g_tables_stack;

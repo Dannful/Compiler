@@ -10,10 +10,14 @@ no Moodle.
 #ifndef _ARVORE_H_
 #define _ARVORE_H_
 
+#include "list.h"
+
 typedef enum { INT = 0, FLOAT = 1, UNKNOWN = 2 } DataType;
 
 typedef struct asd_tree {
   char *label;
+  List *code;
+  uint8_t local;
   DataType data_type;
   int number_of_children;
   struct asd_tree **children;

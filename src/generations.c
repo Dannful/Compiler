@@ -15,7 +15,9 @@ Vinicius Daniel Spadotto - 00341554
 #include "stack.h"
 #include "table.h"
 
-Stack *g_tables_stack = NULL;
+Stack* g_tables_stack = NULL;
+uint8_t last_register_number = 0;
+uint8_t last_label_number = 0;
 
 extern void *arvore;
 extern int get_line_number();
@@ -138,7 +140,11 @@ void parse_assignment(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *ex
         printf(INCOMPATIBLE_TYPES, identifier->value, get_line_number(), get_string_for_data_type((*head)->data_type),
                get_string_for_data_type(expression->data_type));
     }
-
+    iloc_instruction_t instruction;
+    instruction.mnemonic = "storeAI";
+    instruction.type = REGISTER_DEST_OPERAND;
+    instruction.data.register_operand.register = expression->local;
+    instruction.data.register_operand.operand = entry->offset;
     asd_add_child(*head, asd_new(identifier->value));
     asd_add_child(*head, expression);
     free(identifier);
@@ -259,4 +265,12 @@ void parse_list(asd_tree_t *hd, asd_tree_t *tl) { asd_add_child(hd, tl); }
 void parse_program(asd_tree_t **head, asd_tree_t *function_list) {
     *head = function_list;
     arvore = function_list;
+}
+
+uint8_t generate_register() {
+    return last_register_number++;
+}
+
+uint8_t generate_label() {
+    return last_label_number++;
 }

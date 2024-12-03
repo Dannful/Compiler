@@ -10,6 +10,8 @@ Vinicius Daniel Spadotto - 00341554
 
 #define SIZE 1024
 
+#define INT_SIZE 4
+
 /* Source: http://www.cse.yorku.ca/~oz/hash.html */
 size_t hash(const char *key, size_t size) {
   unsigned long hash = 5381;
@@ -28,6 +30,7 @@ Table *table_create(void) {
   map->count = 0;
   map->elements = calloc(sizeof(Bucket *), SIZE);
   map->size = SIZE;
+  map->offset = 0;
   if (map->elements == NULL)
     return NULL;
   sem_init(&map->semaphore, 0, 1);
@@ -119,6 +122,8 @@ void table_set_value(Table *table, const char *key, EntryType entry_type,
     entry.data_type = UNKNOWN;
   }
   entry.entry_type = entry_type;
+  entry.offset = table->offset;
+  table->offset += INT_SIZE;
   table_set(table, key, entry);
 }
 
