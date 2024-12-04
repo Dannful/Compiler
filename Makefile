@@ -5,7 +5,7 @@
 
 CC = gcc
 INCLUDES = obj include
-CFLAGS = -lfl -g -Wall $(foreach dir,$(INCLUDES),-I$(dir))
+CFLAGS = -lm -lfl -g -Wall $(foreach dir,$(INCLUDES),-I$(dir))
 CFLAGS_LEXYY = -lfl -g $(foreach dir,$(INCLUDES),-I$(dir))
 
 SRC_DIR = src

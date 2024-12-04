@@ -42,9 +42,7 @@ void parse_binary_operator(asd_tree_t **head, const char *op, asd_tree_t *operan
 void parse_expression_construction(asd_tree_t **head, const char *name, asd_tree_t *expression,
                                    asd_tree_t *command_block);
 void parse_expression_while(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block);
-void parse_expression_if(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block);
-void parse_expression_if_else(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block_then,
-                              asd_tree_t *command_block_else);
+void parse_expression_condition(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block, asd_tree_t *command_block_else);
 void parse_expression_return(asd_tree_t **head, asd_tree_t *expression);
 void parse_function_call(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *argument_list);
 void parse_assignment(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *expression);

@@ -12,8 +12,14 @@
       let pkgs = import nixpkgs { inherit system; };
       in {
         devShells.default = pkgs.mkShell {
-          buildInputs =
-            [ pkgs.gcc pkgs.gnumake pkgs.bison pkgs.flex pkgs.clang ];
+          buildInputs = [
+            pkgs.gcc
+            pkgs.gnumake
+            pkgs.bison
+            pkgs.flex
+            pkgs.clang
+            pkgs.python3
+          ];
         };
       });
 }

@@ -227,10 +227,10 @@ controle_fluxo:
 
 construcao_condicional:
     TK_PR_IF '(' expressao ')' bloco_comando {
-      parse_expression_if(&$$, $3, $5);
+      parse_expression_condition(&$$, $3, $5, NULL);
     }
     | TK_PR_IF '(' expressao ')' bloco_comando TK_PR_ELSE bloco_comando {
-      parse_expression_if_else(&$$, $3, $5, $7);
+      parse_expression_condition(&$$, $3, $5, $7);
     }
 
 construcao_iterativa:

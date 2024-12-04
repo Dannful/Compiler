@@ -18,3 +18,4 @@ List *create_list();
 void list_add(List *list, iloc_instruction_t instruction);
 void list_append(List *destination, List *source);
 void list_destroy(List *list);
+char *generate_program(List *list);

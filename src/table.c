@@ -112,15 +112,24 @@ void table_set(Table *map, const char *key, TableEntry value) {
 void table_set_value(Table *table, const char *key, EntryType entry_type,
                      char *type) {
   extern int yylineno;
+  DataType data_type;
   TableEntry entry;
   entry.line = yylineno;
   if (strcmp(type, "int") == 0) {
-    entry.data_type = INT;
+    data_type = INT;
   } else if (strcmp(type, "float") == 0) {
-    entry.data_type = FLOAT;
+    data_type = FLOAT;
   } else {
-    entry.data_type = UNKNOWN;
+    data_type = UNKNOWN;
   }
+  TableEntry *already_found = table_get(table, key);
+  if(already_found != NULL) {
+    already_found->entry_type = entry_type;
+    already_found->data_type = data_type;
+    table_set(table, key, *already_found);
+    return;
+  }
+  entry.data_type = data_type;
   entry.entry_type = entry_type;
   entry.offset = table->offset;
   table->offset += INT_SIZE;
