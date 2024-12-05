@@ -13,15 +13,19 @@ no Moodle.
 #include "iloc.h"
 #include "list.h"
 
-typedef enum { INT = 0, FLOAT = 1, UNKNOWN = 2 } DataType;
+typedef enum {
+    INT = 0,
+    FLOAT = 1,
+    UNKNOWN = 2
+} DataType;
 
 typedef struct asd_tree {
-  char *label;
-  List *code;
-  register_identifier_t local;
-  DataType data_type;
-  int number_of_children;
-  struct asd_tree **children;
+    char *label;
+    List *code;
+    register_identifier_t local;
+    DataType data_type;
+    int number_of_children;
+    struct asd_tree **children;
 } asd_tree_t;
 
 const char *get_string_for_data_type(DataType data_type);
@@ -50,4 +54,4 @@ void asd_print(asd_tree_t *tree);
  * Função asd_print_graphviz, idem, em formato DOT
  */
 void asd_print_graphviz(asd_tree_t *tree);
-#endif //_ARVORE_H_
+#endif  //_ARVORE_H_

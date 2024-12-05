@@ -2,16 +2,17 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
 #include "iloc.h"
 
 typedef struct list_node {
-  iloc_instruction_t instruction;
-  struct list_node *next;
+    iloc_instruction_t instruction;
+    struct list_node *next;
 } ListNode;
 
 typedef struct {
-  ListNode *head;
-  size_t count;
+    ListNode *head;
+    size_t count;
 } List;
 
 List *create_list();

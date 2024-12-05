@@ -5,7 +5,7 @@
 
 CC = gcc
 INCLUDES = obj include
-CFLAGS = -lm -lfl -g -Wall $(foreach dir,$(INCLUDES),-I$(dir))
+CFLAGS = -lfl -g -Wall $(foreach dir,$(INCLUDES),-I$(dir))
 CFLAGS_LEXYY = -lfl -g $(foreach dir,$(INCLUDES),-I$(dir))
 
 SRC_DIR = src
@@ -21,8 +21,9 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 all: $(TARGET)
 
+# -lm needs to be on the end of the gcc call
 $(TARGET): $(OBJS) $(OBJ_DIR)/lex.yy.o $(OBJ_DIR)/parser.tab.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(OBJ_DIR)/parser.tab.h
 	@mkdir -p $(OBJ_DIR)

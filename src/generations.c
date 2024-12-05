@@ -39,11 +39,11 @@ void parse_null(asd_tree_t **head) {
 }
 
 void parse_generate_scope() {
-  Table *new_table = table_create();
-  Stack *stack = get_tables_stack();
-  if(stack->count >= 2)
-    new_table->offset = stack->tail->value->offset;
-  stack_push(stack, new_table);
+    Table *new_table = table_create();
+    Stack *stack = get_tables_stack();
+    if (stack->count >= 2)
+        new_table->offset = stack->tail->value->offset;
+    stack_push(stack, new_table);
 }
 
 void parse_destroy_scope() {
@@ -57,45 +57,45 @@ void parse_unary_parenthesis(asd_tree_t **head, asd_tree_t *expression) {
 }
 
 void handle_not_instruction(asd_tree_t **head, const char *op, asd_tree_t *operand) {
-  if(strcmp(op, "!") != 0)
-    return;
-  register_identifier_t reg_with_result = generate_register();
+    if (strcmp(op, "!") != 0)
+        return;
+    register_identifier_t reg_with_result = generate_register();
 
-  iloc_instruction_t not_instruction;
-  not_instruction.mnemonic = "cmp_EQ";
-  not_instruction.type = SREG_SREG_DREG;
-  not_instruction.operands.sources[0].type = GENERAL;
-  not_instruction.operands.sources[1].type = GENERAL;
+    iloc_instruction_t not_instruction;
+    not_instruction.mnemonic = "cmp_EQ";
+    not_instruction.type = SREG_SREG_DREG;
+    not_instruction.operands.sources[0].type = GENERAL;
+    not_instruction.operands.sources[1].type = GENERAL;
 
-  not_instruction.operands.sources[0].identifier = operand->local;
-  not_instruction.operands.sources[1].identifier = 0;
+    not_instruction.operands.sources[0].identifier = operand->local;
+    not_instruction.operands.sources[1].identifier = 0;
 
-  not_instruction.destination.reg.type = GENERAL;
-  not_instruction.destination.reg.identifier = reg_with_result;
+    not_instruction.destination.reg.type = GENERAL;
+    not_instruction.destination.reg.identifier = reg_with_result;
 
-  (*head)->code = operand->code;
-  list_add((*head)->code, not_instruction);
-  (*head)->local = reg_with_result;
+    (*head)->code = operand->code;
+    list_add((*head)->code, not_instruction);
+    (*head)->local = reg_with_result;
 }
 
 void handle_minus_instruction(asd_tree_t **head, const char *op, asd_tree_t *operand) {
-  if(strcmp(op, "-") != 0)
-    return;
-  register_identifier_t reg_with_result = generate_register();
+    if (strcmp(op, "-") != 0)
+        return;
+    register_identifier_t reg_with_result = generate_register();
 
-  iloc_instruction_t minus_instruction;
-  minus_instruction.mnemonic = "multI";
-  minus_instruction.type = SREG_OPERAND_DREG;
-  minus_instruction.operands.reg_and_value.source.type = GENERAL;
-  minus_instruction.operands.reg_and_value.source.identifier = operand->local;
-  minus_instruction.operands.reg_and_value.value = -1;
+    iloc_instruction_t minus_instruction;
+    minus_instruction.mnemonic = "multI";
+    minus_instruction.type = SREG_OPERAND_DREG;
+    minus_instruction.operands.reg_and_value.source.type = GENERAL;
+    minus_instruction.operands.reg_and_value.source.identifier = operand->local;
+    minus_instruction.operands.reg_and_value.value = -1;
 
-  minus_instruction.destination.reg.type = GENERAL;
-  minus_instruction.destination.reg.identifier = reg_with_result;
+    minus_instruction.destination.reg.type = GENERAL;
+    minus_instruction.destination.reg.identifier = reg_with_result;
 
-  (*head)->code = operand->code;
-  list_add((*head)->code, minus_instruction);
-  (*head)->local = reg_with_result;
+    (*head)->code = operand->code;
+    list_add((*head)->code, minus_instruction);
+    (*head)->local = reg_with_result;
 }
 
 void parse_unary_operator(asd_tree_t **head, const char *op, asd_tree_t *operand) {
@@ -135,52 +135,52 @@ void parse_unary_identifier(asd_tree_t **head, lex_value_t *identifier) {
 }
 
 const char *get_mnemonic_for_binary_operation(const char *op) {
-  if(strcmp(op, "+") == 0)
-    return "add";
-  if(strcmp(op, "-") == 0)
-    return "sub";
-  if(strcmp(op, "/") == 0)
-    return "div";
-  if(strcmp(op, "*") == 0)
-    return "mult";
-  if(strcmp(op, "|") == 0)
-    return "or";
-  if(strcmp(op, "&") == 0)
-    return "and";
-  if(strcmp(op, "!=") == 0)
-    return "cmp_NE";
-  if(strcmp(op, "==") == 0)
-    return "cmp_EQ";
-  if(strcmp(op, ">=") == 0)
-    return "cmp_GE";
-  if(strcmp(op, "<=") == 0)
-    return "cmp_LE";
-  if(strcmp(op, ">") == 0)
-    return "cmp_GT";
-  if(strcmp(op, "<") == 0)
-    return "cmp_LT";
-  return "nop";
+    if (strcmp(op, "+") == 0)
+        return "add";
+    if (strcmp(op, "-") == 0)
+        return "sub";
+    if (strcmp(op, "/") == 0)
+        return "div";
+    if (strcmp(op, "*") == 0)
+        return "mult";
+    if (strcmp(op, "|") == 0)
+        return "or";
+    if (strcmp(op, "&") == 0)
+        return "and";
+    if (strcmp(op, "!=") == 0)
+        return "cmp_NE";
+    if (strcmp(op, "==") == 0)
+        return "cmp_EQ";
+    if (strcmp(op, ">=") == 0)
+        return "cmp_GE";
+    if (strcmp(op, "<=") == 0)
+        return "cmp_LE";
+    if (strcmp(op, ">") == 0)
+        return "cmp_GT";
+    if (strcmp(op, "<") == 0)
+        return "cmp_LT";
+    return "nop";
 }
 
 void handle_binary_operation_code(asd_tree_t **head, const char *op, asd_tree_t *operand1, asd_tree_t *operand2) {
-  register_identifier_t result_register = generate_register();
-  iloc_instruction_t instruction;
-  instruction.mnemonic = get_mnemonic_for_binary_operation(op);
-  instruction.type = SREG_SREG_DREG;
+    register_identifier_t result_register = generate_register();
+    iloc_instruction_t instruction;
+    instruction.mnemonic = get_mnemonic_for_binary_operation(op);
+    instruction.type = SREG_SREG_DREG;
 
-  instruction.operands.sources[0].type = GENERAL;
-  instruction.operands.sources[0].identifier = operand1->local;
+    instruction.operands.sources[0].type = GENERAL;
+    instruction.operands.sources[0].identifier = operand1->local;
 
-  instruction.operands.sources[1].type = GENERAL;
-  instruction.operands.sources[1].identifier = operand2->local;
+    instruction.operands.sources[1].type = GENERAL;
+    instruction.operands.sources[1].identifier = operand2->local;
 
-  instruction.destination.reg.type = GENERAL;
-  instruction.destination.reg.identifier = result_register;
+    instruction.destination.reg.type = GENERAL;
+    instruction.destination.reg.identifier = result_register;
 
-  (*head)->local = result_register;
-  (*head)->code = operand1->code;
-  list_append((*head)->code, operand2->code);
-  list_add((*head)->code, instruction);
+    (*head)->local = result_register;
+    (*head)->code = operand1->code;
+    list_append((*head)->code, operand2->code);
+    list_add((*head)->code, instruction);
 }
 
 void parse_binary_operator(asd_tree_t **head, const char *op, asd_tree_t *operand1, asd_tree_t *operand2) {
@@ -204,43 +204,43 @@ void parse_expression_construction(asd_tree_t **head, const char *name, asd_tree
 }
 
 void generate_loop_code(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block) {
-  label_identifier_t before_label = generate_label();
-  label_identifier_t command_label = generate_label();
-  label_identifier_t after_label = generate_label();
+    label_identifier_t before_label = generate_label();
+    label_identifier_t command_label = generate_label();
+    label_identifier_t after_label = generate_label();
 
-  iloc_instruction_t branch;
-  branch.mnemonic = "cbr";
-  branch.type = SREG_LABEL_LABEL;
-  branch.operands.source.type = GENERAL;
-  branch.operands.source.identifier = expression->local;
-  branch.destination.labels[0] = command_label;
-  branch.destination.labels[1] = after_label;
+    iloc_instruction_t branch;
+    branch.mnemonic = "cbr";
+    branch.type = SREG_LABEL_LABEL;
+    branch.operands.source.type = GENERAL;
+    branch.operands.source.identifier = expression->local;
+    branch.destination.labels[0] = command_label;
+    branch.destination.labels[1] = after_label;
 
-  iloc_instruction_t jump;
-  jump.mnemonic = "jumpI";
-  jump.type = JUMP;
-  jump.destination.label = before_label;
+    iloc_instruction_t jump;
+    jump.mnemonic = "jumpI";
+    jump.type = JUMP;
+    jump.destination.label = before_label;
 
-  iloc_instruction_t before_label_instruction;
-  before_label_instruction.type = LABEL;
-  before_label_instruction.operands.label = before_label;
+    iloc_instruction_t before_label_instruction;
+    before_label_instruction.type = LABEL;
+    before_label_instruction.operands.label = before_label;
 
-  iloc_instruction_t command_label_instruction;
-  command_label_instruction.type = LABEL;
-  command_label_instruction.operands.label = command_label;
+    iloc_instruction_t command_label_instruction;
+    command_label_instruction.type = LABEL;
+    command_label_instruction.operands.label = command_label;
 
-  iloc_instruction_t after_label_instruction;
-  after_label_instruction.type = LABEL;
-  after_label_instruction.operands.label = after_label;
+    iloc_instruction_t after_label_instruction;
+    after_label_instruction.type = LABEL;
+    after_label_instruction.operands.label = after_label;
 
-  (*head)->code = create_list();
-  list_add((*head)->code, before_label_instruction);
-  list_append((*head)->code, expression->code);
-  list_add((*head)->code, branch);
-  list_add((*head)->code, command_label_instruction);
-  list_append((*head)->code, command_block->code);
-  list_add((*head)->code, jump);
-  list_add((*head)->code, after_label_instruction);
+    (*head)->code = create_list();
+    list_add((*head)->code, before_label_instruction);
+    list_append((*head)->code, expression->code);
+    list_add((*head)->code, branch);
+    list_add((*head)->code, command_label_instruction);
+    list_append((*head)->code, command_block->code);
+    list_add((*head)->code, jump);
+    list_add((*head)->code, after_label_instruction);
 }
 
 void parse_expression_while(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block) {
@@ -248,51 +248,53 @@ void parse_expression_while(asd_tree_t **head, asd_tree_t *expression, asd_tree_
     generate_loop_code(head, expression, command_block);
 }
 
-void generate_condition_code(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block, asd_tree_t *command_block_else) {
-  label_identifier_t true_label = generate_label();
-  label_identifier_t false_label = generate_label();
-  label_identifier_t after_label = generate_label();
+void generate_condition_code(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block,
+                             asd_tree_t *command_block_else) {
+    label_identifier_t true_label = generate_label();
+    label_identifier_t false_label = generate_label();
+    label_identifier_t after_label = generate_label();
 
-  iloc_instruction_t branch;
-  branch.mnemonic = "cbr";
-  branch.type = SREG_LABEL_LABEL;
-  branch.operands.source.type = GENERAL;
-  branch.operands.source.identifier = expression->local;
-  branch.destination.labels[0] = true_label;
-  branch.destination.labels[1] = false_label;
+    iloc_instruction_t branch;
+    branch.mnemonic = "cbr";
+    branch.type = SREG_LABEL_LABEL;
+    branch.operands.source.type = GENERAL;
+    branch.operands.source.identifier = expression->local;
+    branch.destination.labels[0] = true_label;
+    branch.destination.labels[1] = false_label;
 
-  iloc_instruction_t jump;
-  jump.mnemonic = "jumpI";
-  jump.type = JUMP;
-  jump.destination.label = after_label;
+    iloc_instruction_t jump;
+    jump.mnemonic = "jumpI";
+    jump.type = JUMP;
+    jump.destination.label = after_label;
 
-  iloc_instruction_t true_label_instruction;
-  true_label_instruction.type = LABEL;
-  true_label_instruction.operands.label = true_label;
+    iloc_instruction_t true_label_instruction;
+    true_label_instruction.type = LABEL;
+    true_label_instruction.operands.label = true_label;
 
-  iloc_instruction_t false_label_instruction;
-  false_label_instruction.type = LABEL;
-  false_label_instruction.operands.label = false_label;
+    iloc_instruction_t false_label_instruction;
+    false_label_instruction.type = LABEL;
+    false_label_instruction.operands.label = false_label;
 
-  iloc_instruction_t after_label_instruction;
-  after_label_instruction.type = LABEL;
-  after_label_instruction.operands.label = after_label;
+    iloc_instruction_t after_label_instruction;
+    after_label_instruction.type = LABEL;
+    after_label_instruction.operands.label = after_label;
 
-  (*head)->code = expression->code;
-  list_add((*head)->code, branch);
-  list_add((*head)->code, true_label_instruction);
-  list_append((*head)->code, command_block->code);
-  list_add((*head)->code, jump);
-  list_add((*head)->code, false_label_instruction);
-  if(command_block_else != NULL)
-    list_append((*head)->code, command_block_else->code);
-  list_add((*head)->code, after_label_instruction);
+    (*head)->code = expression->code;
+    list_add((*head)->code, branch);
+    list_add((*head)->code, true_label_instruction);
+    list_append((*head)->code, command_block->code);
+    list_add((*head)->code, jump);
+    list_add((*head)->code, false_label_instruction);
+    if (command_block_else != NULL)
+        list_append((*head)->code, command_block_else->code);
+    list_add((*head)->code, after_label_instruction);
 }
 
-void parse_expression_condition(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block, asd_tree_t *command_block_else) {
+void parse_expression_condition(asd_tree_t **head, asd_tree_t *expression, asd_tree_t *command_block,
+                                asd_tree_t *command_block_else) {
     parse_expression_construction(head, "if", expression, command_block);
-    if(command_block_else != NULL)
-      asd_add_child(*head, command_block_else);
+    if (command_block_else != NULL)
+        asd_add_child(*head, command_block_else);
     generate_condition_code(head, expression, command_block, command_block_else);
 }
 
@@ -323,21 +325,19 @@ void parse_function_call(asd_tree_t **head, lex_value_t *identifier, asd_tree_t 
     free(identifier);
 }
 
-void generate_store_immediate(
-  asd_tree_t **head, asd_tree_t *value, uint32_t offset
-) {
-  iloc_instruction_t instruction;
-  instruction.mnemonic = "storeAI";
-  instruction.type = SREG_DREG_OPERAND;
+void generate_store_immediate(asd_tree_t **head, asd_tree_t *value, uint32_t offset) {
+    iloc_instruction_t instruction;
+    instruction.mnemonic = "storeAI";
+    instruction.type = SREG_DREG_OPERAND;
 
-  instruction.operands.source.type = GENERAL;
-  instruction.operands.source.identifier = value->local;
+    instruction.operands.source.type = GENERAL;
+    instruction.operands.source.identifier = value->local;
 
-  instruction.destination.reg_and_value.source.type = FRAME_POINTER;
-  instruction.destination.reg_and_value.value = offset;
+    instruction.destination.reg_and_value.source.type = FRAME_POINTER;
+    instruction.destination.reg_and_value.value = offset;
 
-  (*head)->code = value->code;
-  list_add((*head)->code, instruction);
+    (*head)->code = value->code;
+    list_add((*head)->code, instruction);
 }
 
 void parse_assignment(asd_tree_t **head, lex_value_t *identifier, asd_tree_t *expression) {
@@ -490,8 +490,8 @@ void parse_function_header(asd_tree_t **head, lex_value_t *identifier, asd_tree_
 void parse_function(asd_tree_t **head, asd_tree_t *header, asd_tree_t *command_list) {
     asd_add_child(header, command_list);
     *head = header;
-    if(strcmp(header->label, "main") == 0)
-      (*head)->code = command_list->code;
+    if (strcmp(header->label, "main") == 0)
+        (*head)->code = command_list->code;
 }
 
 void parse_list(asd_tree_t *hd, asd_tree_t *tl) {
