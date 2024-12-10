@@ -37,9 +37,10 @@ void write_string(Writer *writer, const char *text) {
 }
 
 void write_constant(Writer *writer, int c) {
-    int char_count = c == 0 ? 1 : floor(log10(c) + 1);
-    char str[char_count + 1];
-    snprintf(str, char_count * sizeof(char) + 1, "%d", c);
+    int char_count = c == 0 ? 1 : floor(log10(abs(c)) + 1);
+    size_t count = char_count + 1 + (c < 0 ? 1 : 0);
+    char str[count];
+    snprintf(str, count, "%d", c);
     write_string(writer, str);
 }
 
