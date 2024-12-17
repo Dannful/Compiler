@@ -38,19 +38,31 @@ void write_string(Writer *writer, const char *text) {
 
 void write_constant(Writer *writer, int c) {
     int char_count = c == 0 ? 1 : floor(log10(abs(c)) + 1);
-    size_t count = char_count + 1 + (c < 0 ? 1 : 0);
+    size_t count = char_count + 1 + (c < 0 ? 1 : 0) + 1;
     char str[count];
-    snprintf(str, count, "%d", c);
+    snprintf(str, count, "$%d", c);
     write_string(writer, str);
 }
 
+const char registers[][3] = {
+  "eax", "ebx", "ecx", "edx", "esi", "edi", "esp"
+};
+
+const char *get_register(register_identifier_t reg) {
+  return registers[reg % sizeof(registers)];
+}
+
 void write_register(Writer *writer, iloc_register_t reg) {
-    if (reg.type == GENERAL) {
-        write_string(writer, "r");
-        write_constant(writer, reg.identifier);
-    } else {
-        write_string(writer, "rfp");
-    }
+    if (reg.type != GENERAL)
+      return;
+    write_string(writer, "%");
+    write_string(writer, get_register(reg.identifier));
+}
+
+void write_register_offset(Writer *writer, uint32_t offset) {
+  write_string(writer, "-");
+  write_constant(writer, offset);
+  write_string(writer, "(%rbp)");
 }
 
 void write_label(Writer *writer, label_identifier_t label) {

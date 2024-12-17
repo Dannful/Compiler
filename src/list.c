@@ -53,21 +53,46 @@ void list_destroy(List *list) {
 char *generate_program(List *list) {
     ListNode *head = list->head;
     Writer *writer = create_writer();
+    write_string(writer, ".text");
+    finish_line(writer);
+    write_string(writer, ".globl main");
+    finish_line(writer);
+    write_string(writer, ".type main, @function");
+    finish_line(writer);
+    write_string(writer, "main:");
+    finish_line(writer);
     while (head != NULL) {
         iloc_instruction_t instruction = head->instruction;
         switch (instruction.type) {
             case SREG_SREG_DREG: {
-                write_string(writer, instruction.mnemonic);
+                if (instruction.mnemonic[0] == 'c' && instruction.mnemonic[1] == 'm' &&
+                  instruction.mnemonic[2] == 'p') {
+
+                } else {
+                  if(strcmp(instruction.mnemonic, "div") != 0) {
+                    write_string(writer, "mov ");
+                    write_register(writer, instruction.operands.sources[1]);
+                    write_register(writer, instruction.destination.reg);
+                  }
+                  if(strcmp(instruction.mnemonic, "mult") == 0) {
+                    write_string(writer, "imul");
+                  } else if(strcmp(instruction.mnemonic, "div") == 0) {
+                    write_string(writer, "idiv ");
+                    write_register(writer, instruction.operands.sources[0]);
+                    write_operand_separator(writer);
+                    write_register(writer, instruction.operands.sources[1]);
+                    finish_line(writer);
+                    write_string(writer, "mov %eax, ");
+                    write_register(writer, instruction.destination.reg);
+                    finish_line(writer);
+                    break;
+                  } else {
+                    write_string(writer, instruction.mnemonic);
+                  }
+                }
                 finish_word(writer);
                 write_register(writer, instruction.operands.sources[0]);
                 write_operand_separator(writer);
-                write_register(writer, instruction.operands.sources[1]);
-                if (instruction.mnemonic[0] == 'c' && instruction.mnemonic[1] == 'm' &&
-                    instruction.mnemonic[2] == 'p') {
-                    write_branch_separator(writer);
-                } else {
-                    write_standard_separator(writer);
-                }
                 write_register(writer, instruction.destination.reg);
                 finish_line(writer);
                 break;
