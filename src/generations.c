@@ -13,6 +13,7 @@ Vinicius Daniel Spadotto - 00341554
 #include "asd.h"
 #include "errors.h"
 #include "stack.h"
+#include "sys/types.h"
 #include "table.h"
 
 Stack *g_tables_stack = NULL;
@@ -36,6 +37,19 @@ void parse_simple(asd_tree_t **head, asd_tree_t *body) {
 }
 void parse_null(asd_tree_t **head) {
     *head = NULL;
+}
+
+register_t generate_zero_register(List *out) {
+  iloc_instruction_t load_zero_into_reg;
+  load_zero_into_reg.mnemonic = "loadI";
+  load_zero_into_reg.type = OPERAND_DREG;
+  load_zero_into_reg.operands.value = 0;
+  load_zero_into_reg.destination.reg.type = GENERAL;
+  load_zero_into_reg.destination.reg.identifier = generate_register();
+
+  list_add(out, load_zero_into_reg);
+
+  return load_zero_into_reg.destination.reg.identifier;
 }
 
 void parse_generate_scope() {
@@ -68,7 +82,7 @@ void handle_not_instruction(asd_tree_t **head, const char *op, asd_tree_t *opera
     not_instruction.operands.sources[1].type = GENERAL;
 
     not_instruction.operands.sources[0].identifier = operand->local;
-    not_instruction.operands.sources[1].identifier = 0;
+    not_instruction.operands.sources[1].identifier = generate_zero_register(operand->code);
 
     not_instruction.destination.reg.type = GENERAL;
     not_instruction.destination.reg.identifier = reg_with_result;
@@ -506,18 +520,9 @@ void parse_list(asd_tree_t *hd, asd_tree_t *tl) {
 }
 
 void parse_program(asd_tree_t **head, asd_tree_t *function_list) {
-    iloc_instruction_t load_zero_into_reg;
-    load_zero_into_reg.mnemonic = "loadI";
-    load_zero_into_reg.type = OPERAND_DREG;
-    load_zero_into_reg.operands.value = 0;
-    load_zero_into_reg.destination.reg.type = GENERAL;
-    load_zero_into_reg.destination.reg.identifier = 0;
-    List *list = create_list();
-    list_add(list, load_zero_into_reg);
-    list_append(list, function_list->code);
     *head = function_list;
     arvore = function_list;
-    printf("%s\n", generate_program(list));
+    printf("%s\n", generate_program(function_list->code));
 }
 
 register_identifier_t generate_register() {

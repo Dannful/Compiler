@@ -94,6 +94,7 @@ char *generate_program(List *list) {
                   write_string(writer, "movzbl %al, ");
                   write_register(writer, instruction.destination.reg);
                   finish_line(writer);
+                  break;
                 } else {
                   if(strcmp(instruction.mnemonic, "div") != 0) {
                     write_string(writer, "movl ");
@@ -180,20 +181,20 @@ char *generate_program(List *list) {
             }
             case SREG_LABEL_LABEL: {
                 if(strcmp(instruction.mnemonic, "cbr") == 0) {
-                  write_string(writer, "tst ");
+                  write_string(writer, "cmp $0, ");
                   write_register(writer, instruction.operands.source);
                   finish_line(writer);
-                  write_string(writer, "jz ");
+                  write_string(writer, "je ");
                   write_label(writer, instruction.destination.labels[1]);
                   finish_line(writer);
-                  write_string(writer, "j ");
+                  write_string(writer, "jmp ");
                   write_label(writer, instruction.destination.labels[0]);
                 }
                 finish_line(writer);
                 break;
             }
             case JUMP: {
-                write_string(writer, "j ");
+                write_string(writer, "jmp ");
                 write_label(writer, instruction.destination.label);
                 finish_line(writer);
                 break;

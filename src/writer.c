@@ -79,7 +79,11 @@ void write_register_offset(Writer *writer, uint32_t offset, iloc_register_t reg)
 
 void write_label(Writer *writer, label_identifier_t label) {
     write_string(writer, "l");
-    write_constant(writer, label);
+    int char_count = label == 0 ? 1 : floor(log10(abs(label)) + 1);
+    size_t count = char_count + 1 + (label < 0 ? 1 : 0);
+    char str[count];
+    snprintf(str, count, "%d", label);
+    write_string(writer, str);
 }
 
 void write_operand_separator(Writer *writer) {
