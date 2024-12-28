@@ -23,7 +23,8 @@ typedef enum {
     OPERAND_DREG = 4,
     LABEL = 5,
     SREG_LABEL_LABEL = 6,
-    JUMP = 7
+    JUMP = 7,
+    RETURN = 8
 } iloc_instruction_type_t;
 
 typedef struct {

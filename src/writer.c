@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define REGISTER_COUNT 6
+
 Writer *create_writer() {
     Writer *writer = malloc(sizeof(Writer));
     if (writer == NULL)
@@ -44,12 +46,12 @@ void write_constant(Writer *writer, int c) {
     write_string(writer, str);
 }
 
-const char registers[][3] = {
-  "eax", "ebx", "ecx", "edx", "esi", "edi", "esp"
+const char registers[REGISTER_COUNT][4] = {
+  "eax\0", "ebx\0", "ecx\0", "edx\0", "esi\0", "edi\0"
 };
 
 const char *get_register(register_identifier_t reg) {
-  return registers[reg % sizeof(registers)];
+  return registers[reg % REGISTER_COUNT];
 }
 
 void write_register(Writer *writer, iloc_register_t reg) {
@@ -61,7 +63,11 @@ void write_register(Writer *writer, iloc_register_t reg) {
 
 void write_register_offset(Writer *writer, uint32_t offset, iloc_register_t reg) {
   write_string(writer, "-");
-  write_constant(writer, offset);
+  int char_count = offset == 0 ? 1 : floor(log10(abs(offset)) + 1);
+  size_t count = char_count + 1 + (offset < 0 ? 1 : 0);
+  char str[count];
+  snprintf(str, count, "%d", offset);
+  write_string(writer, str);
   if(reg.type == FRAME_POINTER) {
     write_string(writer, "(%rbp)");
   } else {

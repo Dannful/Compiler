@@ -301,6 +301,13 @@ void parse_expression_condition(asd_tree_t **head, asd_tree_t *expression, asd_t
 void parse_expression_return(asd_tree_t **head, asd_tree_t *expression) {
     *head = asd_new("return");
     asd_add_child(*head, expression);
+    iloc_instruction_t ret;
+    ret.mnemonic = "return";
+    ret.type = RETURN;
+    ret.destination.reg.type = GENERAL;
+    ret.destination.reg.identifier = expression->local;
+    (*head)->code = expression->code;
+    list_add((*head)->code, ret);
 }
 
 void parse_argument_list(asd_tree_t *expression, asd_tree_t *argument_list) {

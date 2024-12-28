@@ -1,5 +1,6 @@
 #include "list.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -61,6 +62,10 @@ char *generate_program(List *list) {
     finish_line(writer);
     write_string(writer, "main:");
     finish_line(writer);
+    write_string(writer, "pushq %rbp");
+    finish_line(writer);
+    write_string(writer, "movq %rsp, %rbp");
+    finish_line(writer);
     while (head != NULL) {
         iloc_instruction_t instruction = head->instruction;
         switch (instruction.type) {
@@ -95,6 +100,7 @@ char *generate_program(List *list) {
                     write_register(writer, instruction.operands.sources[1]);
                     write_operand_separator(writer);
                     write_register(writer, instruction.destination.reg);
+                    finish_line(writer);
                   }
                   if(strcmp(instruction.mnemonic, "mult") == 0) {
                     write_string(writer, "imull");
@@ -191,6 +197,18 @@ char *generate_program(List *list) {
                 write_label(writer, instruction.destination.label);
                 finish_line(writer);
                 break;
+            }
+            case RETURN: {
+              write_string(writer, "movl ");
+              write_register(writer, instruction.destination.reg);
+              write_string(writer, ", %eax");
+              finish_line(writer);
+              write_string(writer, "popq %rbp");
+              finish_line(writer);
+              write_string(writer, "ret");
+              finish_line(writer);
+              write_bytes(writer, "\0", 1);
+              break;
             }
         }
         head = head->next;
