@@ -59,10 +59,16 @@ void write_register(Writer *writer, iloc_register_t reg) {
     write_string(writer, get_register(reg.identifier));
 }
 
-void write_register_offset(Writer *writer, uint32_t offset) {
+void write_register_offset(Writer *writer, uint32_t offset, iloc_register_t reg) {
   write_string(writer, "-");
   write_constant(writer, offset);
-  write_string(writer, "(%rbp)");
+  if(reg.type == FRAME_POINTER) {
+    write_string(writer, "(%rbp)");
+  } else {
+    write_string(writer, "(%");
+    write_register(writer, reg);
+    write_string(writer, ")");
+  }
 }
 
 void write_label(Writer *writer, label_identifier_t label) {

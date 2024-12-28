@@ -24,6 +24,6 @@ void write_label(Writer *writer, label_identifier_t label);
 void write_operand_separator(Writer *writer);
 void write_branch_separator(Writer *writer);
 void write_standard_separator(Writer *writer);
-void write_register_offset(Writer *writer, uint32_t offset);
+void write_register_offset(Writer *writer, uint32_t offset, iloc_register_t reg);
 void finish_line(Writer *writer);
 void finish_word(Writer *writer);
