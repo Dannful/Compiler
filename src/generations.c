@@ -522,7 +522,15 @@ void parse_list(asd_tree_t *hd, asd_tree_t *tl) {
 void parse_program(asd_tree_t **head, asd_tree_t *function_list) {
     *head = function_list;
     arvore = function_list;
-    printf("%s\n", generate_program(function_list->code));
+    extern char *output_file;
+    FILE *foutput = fopen(output_file, "w");
+    if(foutput == NULL) {
+      printf("Failed to open output file.\n");
+      exit(1);
+    }
+    char *program = generate_program(function_list->code);
+    fwrite(program, sizeof(char), strlen(program), foutput);
+    fclose(foutput);
 }
 
 register_identifier_t generate_register() {
