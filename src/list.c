@@ -98,7 +98,7 @@ char *generate_program(List *list) {
                 } else {
                   if(strcmp(instruction.mnemonic, "div") != 0) {
                     write_string(writer, "movl ");
-                    write_register(writer, instruction.operands.sources[1]);
+                    write_register(writer, instruction.operands.sources[0]);
                     write_operand_separator(writer);
                     write_register(writer, instruction.destination.reg);
                     finish_line(writer);
@@ -145,7 +145,7 @@ char *generate_program(List *list) {
                   }
                 }
                 finish_word(writer);
-                write_register(writer, instruction.operands.sources[0]);
+                write_register(writer, instruction.operands.sources[1]);
                 write_operand_separator(writer);
                 write_register(writer, instruction.destination.reg);
                 finish_line(writer);
