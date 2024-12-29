@@ -73,9 +73,9 @@ char *generate_program(List *list) {
                 if (instruction.mnemonic[0] == 'c' && instruction.mnemonic[1] == 'm' &&
                   instruction.mnemonic[2] == 'p') {
                   write_string(writer, "cmp ");
-                  write_register(writer, instruction.operands.sources[0]);
-                  write_operand_separator(writer);
                   write_register(writer, instruction.operands.sources[1]);
+                  write_operand_separator(writer);
+                  write_register(writer, instruction.operands.sources[0]);
                   finish_line(writer);
                   if(strcmp(instruction.mnemonic, "cmp_NE") == 0) {
                     write_string(writer, "setne %al");
@@ -106,13 +106,38 @@ char *generate_program(List *list) {
                   if(strcmp(instruction.mnemonic, "mult") == 0) {
                     write_string(writer, "imull");
                   } else if(strcmp(instruction.mnemonic, "div") == 0) {
-                    write_string(writer, "idiv ");
-                    write_register(writer, instruction.operands.sources[0]);
-                    write_operand_separator(writer);
-                    write_register(writer, instruction.operands.sources[1]);
+                    write_string(writer, "pushq %rax");
                     finish_line(writer);
-                    write_string(writer, "movl %eax, ");
+                    write_string(writer, "pushq %rbx");
+                    finish_line(writer);
+                    write_string(writer, "pushq %rcx");
+                    finish_line(writer);
+                    write_string(writer, "pushq %rdx");
+                    finish_line(writer);
+                    write_string(writer, "mov ");
+                    write_register(writer, instruction.operands.sources[1]);
+                    write_string(writer, ", %ebx");
+                    finish_line(writer);
+                    write_string(writer, "mov $0, %edx");
+                    finish_line(writer);
+                    write_string(writer, "mov ");
+                    write_register(writer, instruction.operands.sources[0]);
+                    write_string(writer, ", %eax");
+                    finish_line(writer);
+                    write_string(writer, "idiv %ebx");
+                    finish_line(writer);
+                    write_string(writer, "movl %eax, %ecx");
+                    finish_line(writer);
+                    write_string(writer, "popq %rax");
+                    finish_line(writer);
+                    write_string(writer, "popq %rbx");
+                    finish_line(writer);
+                    write_string(writer, "movl %ecx, ");
                     write_register(writer, instruction.destination.reg);
+                    finish_line(writer);
+                    write_string(writer, "popq %rcx");
+                    finish_line(writer);
+                    write_string(writer, "popq %rdx");
                     finish_line(writer);
                     break;
                   } else {
@@ -208,12 +233,12 @@ char *generate_program(List *list) {
               finish_line(writer);
               write_string(writer, "ret");
               finish_line(writer);
-              write_bytes(writer, "\0", 1);
               break;
             }
         }
         head = head->next;
     }
+    write_bytes(writer, "\0", 1);
     char *result = strdup((char *)writer->buffer);
     destroy_writer(writer);
     return result;
