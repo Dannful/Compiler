@@ -106,39 +106,55 @@ char *generate_program(List *list) {
                   if(strcmp(instruction.mnemonic, "mult") == 0) {
                     write_string(writer, "imull");
                   } else if(strcmp(instruction.mnemonic, "div") == 0) {
-                    write_string(writer, "pushq %rax");
+                    if(strcmp("eax", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "pushq %rax");
+                      finish_line(writer);
+                    }
+                    if(strcmp("ebx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "pushq %rbx");
+                      finish_line(writer);
+                    }
+                    if(strcmp("ecx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "pushq %rcx");
+                      finish_line(writer);
+                    }
+                    if(strcmp("edx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "pushq %rdx");
+                      finish_line(writer);
+                    }
+                    write_string(writer, "movl ");
+                    write_register(writer, instruction.operands.sources[0]);
+                    write_string(writer, ", %eax");
                     finish_line(writer);
-                    write_string(writer, "pushq %rbx");
-                    finish_line(writer);
-                    write_string(writer, "pushq %rcx");
-                    finish_line(writer);
-                    write_string(writer, "pushq %rdx");
-                    finish_line(writer);
-                    write_string(writer, "mov ");
+                    write_string(writer, "movl ");
                     write_register(writer, instruction.operands.sources[1]);
                     write_string(writer, ", %ebx");
                     finish_line(writer);
                     write_string(writer, "mov $0, %edx");
                     finish_line(writer);
-                    write_string(writer, "mov ");
-                    write_register(writer, instruction.operands.sources[0]);
-                    write_string(writer, ", %eax");
-                    finish_line(writer);
                     write_string(writer, "idiv %ebx");
                     finish_line(writer);
                     write_string(writer, "movl %eax, %ecx");
                     finish_line(writer);
-                    write_string(writer, "popq %rax");
-                    finish_line(writer);
-                    write_string(writer, "popq %rbx");
-                    finish_line(writer);
                     write_string(writer, "movl %ecx, ");
                     write_register(writer, instruction.destination.reg);
                     finish_line(writer);
-                    write_string(writer, "popq %rcx");
-                    finish_line(writer);
-                    write_string(writer, "popq %rdx");
-                    finish_line(writer);
+                    if(strcmp("eax", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "popq %rax");
+                      finish_line(writer);
+                    }
+                    if(strcmp("ebx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "popq %rbx");
+                      finish_line(writer);
+                    }
+                    if(strcmp("ecx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "popq %rcx");
+                      finish_line(writer);
+                    }
+                    if(strcmp("edx", get_register(instruction.destination.reg.identifier)) != 0) {
+                      write_string(writer, "popq %rdx");
+                      finish_line(writer);
+                    }
                     break;
                   } else {
                     write_string(writer, instruction.mnemonic);

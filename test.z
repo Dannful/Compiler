@@ -1,0 +1,16 @@
+main => int {
+  int x, y, z;
+  x = 3 * 4;
+  y = x / 12;
+  z = 32;
+
+  if(x > y) {
+    y = x;
+  };
+
+  while(z > 0) {
+    z = z - 1;
+  };
+
+  return x / 4 * 3 * 5;
+}

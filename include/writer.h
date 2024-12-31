@@ -16,6 +16,7 @@ typedef struct {
 Writer *create_writer();
 void destroy_writer(Writer *writer);
 
+const char *get_register(register_identifier_t reg);
 void write_bytes(Writer *writer, const void *buf, size_t count);
 void write_string(Writer *writer, const char *text);
 void write_constant(Writer *writer, int c);
